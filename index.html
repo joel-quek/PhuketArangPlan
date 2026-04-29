@@ -1,269 +1,328 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Decision Board</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- Firebase COMPAT (important) -->
+  <title>Phuket Arang Decision Board</title>
+
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 
   <style>
-    body { font-family: Arial; background:#f5f5f5; margin:0; }
-    header { background:#111; color:white; padding:16px; }
-    main { max-width:700px; margin:auto; padding:12px; }
-
-    .card {
-      background:white;
-      padding:12px;
-      margin-bottom:12px;
-      border-radius:10px;
-      border:1px solid #ddd;
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f7f7f7;
+      color: #111827;
     }
 
-    input {
-      width:100%;
-      padding:8px;
-      margin:6px 0;
-      border-radius:6px;
-      border:1px solid #ccc;
+    header {
+      background: #111827;
+      color: white;
+      padding: 18px 16px;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 22px;
+    }
+
+    header p {
+      margin: 6px 0 0;
+      font-size: 13px;
+      opacity: 0.85;
+    }
+
+    main {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 14px;
+    }
+
+    .card {
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
+      padding: 14px;
+      margin-bottom: 14px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+
+    h2 {
+      margin: 0 0 12px;
+      font-size: 17px;
+    }
+
+    h3 {
+      margin: 0 0 8px;
+      font-size: 16px;
+    }
+
+    .option {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      padding: 10px;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      margin-bottom: 8px;
+      background: #fafafa;
+    }
+
+    .option-name {
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    .votes {
+      font-weight: bold;
+      white-space: nowrap;
     }
 
     button {
-      padding:6px 10px;
-      border:none;
-      border-radius:999px;
-      background:#2563eb;
-      color:white;
-      cursor:pointer;
-      margin:3px;
+      border: none;
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 13px;
+      color: white;
+      background: #2563eb;
+      cursor: pointer;
     }
 
-    .admin { background:#7c3aed; }
-    .delete { background:#dc2626; }
-
-    .option {
-      display:flex;
-      justify-content:space-between;
-      margin:6px 0;
-      padding:8px;
-      border:1px solid #eee;
-      border-radius:6px;
-      background:#fafafa;
+    button:disabled {
+      background: #9ca3af;
+      cursor: not-allowed;
     }
 
     .winner {
-      background:#ecfdf5;
-      padding:8px;
-      border-radius:6px;
-      margin-bottom:6px;
+      padding: 10px;
+      border-radius: 12px;
+      background: #ecfdf5;
+      color: #065f46;
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+
+    .muted {
+      color: #6b7280;
+      font-size: 13px;
+    }
+
+    #status {
+      font-size: 12px;
+      color: #6b7280;
+      margin-bottom: 12px;
+    }
+
+    @media (max-width: 480px) {
+      .option {
+        flex-direction: column;
+        align-items: flex-start;
+      }
     }
   </style>
 </head>
 
 <body>
 <header>
-  <h2>Decision Board</h2>
+  <h1>Phuket Arang Decision Board</h1>
+  <p>Vote once per question. Winners update live.</p>
 </header>
 
 <main>
+  <div id="status">Loading votes...</div>
 
-  <div class="card">
-    <h3>Winners</h3>
-    <div id="winners"></div>
-  </div>
+  <section class="card">
+    <h2>Current Winners</h2>
+    <div id="winnerSummary" class="muted">Waiting for votes...</div>
+  </section>
 
-  <div class="card">
-    <h3>Admin</h3>
-
-    <input id="pass" placeholder="passcode"/>
-    <button class="admin" onclick="login()">Login</button>
-
-    <div id="adminPanel" style="display:none;">
-      <input id="newQ" placeholder="Add question"/>
-      <button onclick="addQuestion()">Add Question</button>
-    </div>
-  </div>
-
-  <div id="board"></div>
-
+  <section class="card">
+    <h2>Questions</h2>
+    <div id="board"></div>
+  </section>
 </main>
 
 <script>
-  // 🔴 PUT YOUR REAL CONFIG HERE
   const firebaseConfig = {
-    apiKey: "YOUR_KEY",
-    authDomain: "YOUR_DOMAIN",
-    projectId: "YOUR_PROJECT_ID"
+    apiKey: "AIzaSyCWhhePl8hpHV12uwr0-4LWmuP1_CIrqYJI",
+    authDomain: "phuket-arang.firebaseapp.com",
+    projectId: "phuket-arang",
+    storageBucket: "phuket-arang.firebasestorage.app",
+    messagingSenderId: "352587072367",
+    appId: "1:352587072367:web:62376cc321b84f57da5e9a"
   };
 
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
 
-  const EVENT_ID = "decision-board";
-  const PASS = "joel123";
+  const EVENT_ID = "phuket-arang-decision-board-v1";
 
-  let isAdmin = false;
-
-  function login() {
-    if (document.getElementById("pass").value === PASS) {
-      isAdmin = true;
-      document.getElementById("adminPanel").style.display = "block";
-    } else {
-      alert("wrong pass");
+  const questions = [
+    {
+      id: "day2-lunch",
+      text: "Day 2 lunch eat where?",
+      options: [
+        { id: "ksl", text: "KSL City Mall" },
+        { id: "midvalley", text: "Mid Valley Southkey" },
+        { id: "teck-sing", text: "Teck Sing" },
+        { id: "delivery", text: "Delivery to Airbnb" }
+      ]
+    },
+    {
+      id: "day2-dinner",
+      text: "Day 2 dinner eat where?",
+      options: [
+        { id: "seafood", text: "Seafood dinner" },
+        { id: "hotpot", text: "Hotpot" },
+        { id: "zi-char", text: "Zi char" },
+        { id: "delivery", text: "Delivery to Airbnb" }
+      ]
+    },
+    {
+      id: "cat-cafe",
+      text: "When to go cat cafe?",
+      options: [
+        { id: "day2-afternoon", text: "Day 2 afternoon" },
+        { id: "day3-morning", text: "Day 3 morning" },
+        { id: "skip", text: "Skip cat cafe" }
+      ]
     }
+  ];
+
+  const counts = {};
+
+  function optionRef(questionId, optionId) {
+    return db
+      .collection("events")
+      .doc(EVENT_ID)
+      .collection("questions")
+      .doc(questionId)
+      .collection("options")
+      .doc(optionId);
   }
 
-  function qRef(id) {
-    return db.collection("events").doc(EVENT_ID)
-      .collection("questions").doc(id);
+  function voteKey(questionId) {
+    return "phuket_arang_vote_" + EVENT_ID + "_" + questionId;
   }
 
-  function optRef(q, o) {
-    return qRef(q).collection("options").doc(o);
+  function hasVoted(questionId) {
+    return localStorage.getItem(voteKey(questionId)) === "1";
   }
 
-  function addQuestion() {
-    const text = document.getElementById("newQ").value.trim();
-    if (!text) return;
-
-    const id = Date.now().toString();
-
-    qRef(id).set({
-      text: text,
-      order: Date.now()
-    });
-
-    document.getElementById("newQ").value = "";
+  function markVoted(questionId) {
+    localStorage.setItem(voteKey(questionId), "1");
   }
 
-  function saveQuestion(id) {
-    const val = document.getElementById("edit-" + id).value;
-
-    qRef(id).update({
-      text: val
-    });
-  }
-
-  function deleteQuestion(id) {
-    qRef(id).delete();
-  }
-
-  function addOption(qid) {
-    const val = document.getElementById("opt-" + qid).value;
-    if (!val) return;
-
-    const id = Date.now().toString();
-
-    optRef(qid, id).set({
-      text: val,
-      votes: 0
-    });
-
-    document.getElementById("opt-" + qid).value = "";
-  }
-
-  function vote(qid, oid) {
-    const key = "vote_" + qid;
-
-    if (localStorage.getItem(key)) {
-      alert("already voted");
+  async function vote(questionId, optionId) {
+    if (hasVoted(questionId)) {
+      document.getElementById("status").textContent = "You already voted for this question on this device.";
       return;
     }
 
-    optRef(qid, oid).update({
-      votes: firebase.firestore.FieldValue.increment(1)
-    });
+    const ref = optionRef(questionId, optionId);
 
-    localStorage.setItem(key, "1");
+    try {
+      await ref.update({
+        count: firebase.firestore.FieldValue.increment(1)
+      });
+    } catch (err) {
+      await ref.set({
+        count: 1
+      }, { merge: true });
+    }
+
+    markVoted(questionId);
+    document.getElementById("status").textContent = "Vote submitted.";
+    render();
   }
 
-  function render(questions, options) {
+  function getCount(questionId, optionId) {
+    return counts[questionId]?.[optionId] || 0;
+  }
+
+  function getWinner(question) {
+    const ranked = [...question.options].sort((a, b) => {
+      return getCount(question.id, b.id) - getCount(question.id, a.id);
+    });
+
+    const winner = ranked[0];
+    const winnerCount = getCount(question.id, winner.id);
+
+    if (winnerCount === 0) return null;
+
+    return {
+      text: winner.text,
+      count: winnerCount
+    };
+  }
+
+  function renderWinners() {
+    const box = document.getElementById("winnerSummary");
+
+    box.innerHTML = questions.map(q => {
+      const winner = getWinner(q);
+
+      return `
+        <div class="winner">
+          <strong>${q.text}</strong><br>
+          ${winner ? `${winner.text} — 👍 ${winner.count}` : "No votes yet"}
+        </div>
+      `;
+    }).join("");
+  }
+
+  function render() {
     const board = document.getElementById("board");
-    const winners = document.getElementById("winners");
 
-    board.innerHTML = "";
-    winners.innerHTML = "";
+    board.innerHTML = questions.map(q => {
+      const optionsHtml = q.options.map(o => {
+        const disabled = hasVoted(q.id) ? "disabled" : "";
+        const buttonText = hasVoted(q.id) ? "Voted" : "Vote";
 
-    questions.sort((a,b)=>a.order-b.order);
-
-    questions.forEach(q => {
-
-      const opts = options[q.id] || [];
-
-      // winner
-      let top = null;
-      opts.forEach(o=>{
-        if (!top || o.votes > top.votes) top = o;
-      });
-
-      if (top) {
-        winners.innerHTML += `
-          <div class="winner">
-            <b>${q.text}</b><br>
-            ${top.text} (${top.votes})
+        return `
+          <div class="option">
+            <div class="option-name">${o.text}</div>
+            <div class="votes">👍 ${getCount(q.id, o.id)}</div>
+            <button onclick="vote('${q.id}', '${o.id}')" ${disabled}>${buttonText}</button>
           </div>
         `;
-      }
+      }).join("");
 
-      let html = `
+      return `
         <div class="card">
           <h3>${q.text}</h3>
+          ${optionsHtml}
+        </div>
       `;
+    }).join("");
 
-      opts.forEach(o=>{
-        html += `
-          <div class="option">
-            ${o.text} (${o.votes})
-            <button onclick="vote('${q.id}','${o.id}')">Vote</button>
-          </div>
-        `;
+    renderWinners();
+  }
+
+  function listenVotes() {
+    questions.forEach(q => {
+      counts[q.id] = {};
+
+      q.options.forEach(o => {
+        optionRef(q.id, o.id).onSnapshot(doc => {
+          counts[q.id][o.id] = doc.exists ? (doc.data().count || 0) : 0;
+          render();
+          document.getElementById("status").textContent = "Votes synced.";
+        }, err => {
+          console.error(err);
+          document.getElementById("status").textContent = "Vote sync failed. Check Firebase rules.";
+        });
       });
-
-      if (isAdmin) {
-        html += `
-          <input id="edit-${q.id}" value="${q.text}">
-          <button onclick="saveQuestion('${q.id}')">Save</button>
-          <button class="delete" onclick="deleteQuestion('${q.id}')">Delete</button>
-
-          <hr>
-
-          <input id="opt-${q.id}" placeholder="add option">
-          <button onclick="addOption('${q.id}')">Add Option</button>
-        `;
-      }
-
-      html += "</div>";
-      board.innerHTML += html;
     });
   }
 
-  function listen() {
-    const qCol = db.collection("events").doc(EVENT_ID).collection("questions");
+  window.vote = vote;
 
-    qCol.onSnapshot(qSnap => {
-      const questions = [];
-      const options = {};
-
-      qSnap.forEach(qDoc=>{
-        const q = { id:qDoc.id, ...qDoc.data() };
-        questions.push(q);
-
-        qCol.doc(q.id).collection("options")
-          .onSnapshot(oSnap=>{
-            options[q.id] = [];
-            oSnap.forEach(o=>{
-              options[q.id].push({ id:o.id, ...o.data() });
-            });
-            render(questions, options);
-          });
-      });
-
-      render(questions, options);
-    });
-  }
-
-  listen();
+  render();
+  listenVotes();
 </script>
 </body>
 </html>
