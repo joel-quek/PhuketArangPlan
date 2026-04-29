@@ -1,208 +1,195 @@
+<!-- same file: decision-board.html -->
+<!-- Admin passcode default: joel123 -->
+<!-- Search ADMIN_PASSCODE to change it -->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>JB Trip Decision Board</title>
+  <title>Group Decision Board</title>
 
   <style>
     :root {
-      --bg: #f7f7f7;
-      --card: #ffffff;
-      --dark: #111827;
-      --muted: #6b7280;
-      --border: #e5e7eb;
-      --blue: #2563eb;
-      --green: #059669;
-      --red: #dc2626;
-      --amber-bg: #fffbeb;
-      --amber-text: #92400e;
+      --bg:#f7f7f7; --card:#fff; --dark:#111827; --muted:#6b7280;
+      --border:#e5e7eb; --blue:#2563eb; --green:#059669; --red:#dc2626;
+      --amber-bg:#fffbeb; --amber-text:#92400e;
     }
 
-    * { box-sizing: border-box; }
+    * { box-sizing:border-box; }
 
     body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: var(--bg);
-      color: var(--dark);
+      margin:0;
+      font-family:Arial,sans-serif;
+      background:var(--bg);
+      color:var(--dark);
     }
 
     header {
-      background: var(--dark);
-      color: white;
-      padding: 18px 16px;
+      background:var(--dark);
+      color:white;
+      padding:18px 16px;
     }
 
-    header h1 {
-      margin: 0;
-      font-size: 22px;
-    }
-
-    header p {
-      margin: 6px 0 0;
-      font-size: 13px;
-      opacity: 0.85;
-    }
+    header h1 { margin:0; font-size:22px; }
+    header p { margin:6px 0 0; font-size:13px; opacity:.85; }
 
     main {
-      max-width: 760px;
-      margin: 0 auto;
-      padding: 14px;
+      max-width:800px;
+      margin:0 auto;
+      padding:14px;
     }
 
-    .section {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 14px;
-      margin-bottom: 14px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    .section, .decision-card {
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:14px;
+      margin-bottom:14px;
+      box-shadow:0 2px 8px rgba(0,0,0,.04);
     }
 
-    .section h2 {
-      margin: 0 0 10px;
-      font-size: 17px;
-    }
-
-    .decision-card {
-      background: white;
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 14px;
-      margin-bottom: 12px;
-    }
+    h2 { margin:0 0 10px; font-size:17px; }
 
     .decision-title {
-      font-size: 16px;
-      font-weight: bold;
-      margin-bottom: 4px;
+      font-size:16px;
+      font-weight:bold;
+      margin-bottom:4px;
     }
 
     .decision-subtitle {
-      font-size: 12px;
-      color: var(--muted);
-      margin-bottom: 12px;
+      font-size:12px;
+      color:var(--muted);
+      margin-bottom:12px;
     }
 
     .option {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 10px;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 10px;
-      margin-bottom: 8px;
-      background: #fafafa;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:10px;
+      margin-bottom:8px;
+      background:#fafafa;
     }
 
-    .option-main {
-      min-width: 0;
-    }
-
-    .option-title {
-      font-weight: bold;
-      font-size: 14px;
-    }
-
-    .option-note {
-      font-size: 12px;
-      color: var(--muted);
-      margin-top: 3px;
-    }
-
-    .votes {
-      font-size: 13px;
-      font-weight: bold;
-      white-space: nowrap;
-    }
+    .option-main { min-width:0; }
+    .option-title { font-weight:bold; font-size:14px; }
+    .option-note { font-size:12px; color:var(--muted); margin-top:3px; }
+    .votes { font-size:13px; font-weight:bold; white-space:nowrap; }
 
     button {
-      border: none;
-      border-radius: 999px;
-      padding: 8px 11px;
-      font-size: 12px;
-      color: white;
-      background: var(--blue);
-      cursor: pointer;
-      white-space: nowrap;
+      border:none;
+      border-radius:999px;
+      padding:8px 11px;
+      font-size:12px;
+      color:white;
+      background:var(--blue);
+      cursor:pointer;
+      white-space:nowrap;
     }
 
-    button:disabled {
-      background: #9ca3af;
-      cursor: not-allowed;
+    button:disabled { background:#9ca3af; cursor:not-allowed; }
+    button.finalise { background:var(--green); }
+    button.reset, button.delete { background:var(--red); }
+    button.admin { background:#7c3aed; }
+
+    input {
+      width:100%;
+      padding:9px 10px;
+      border:1px solid var(--border);
+      border-radius:10px;
+      margin-bottom:8px;
+      font-size:13px;
     }
 
-    button.finalise {
-      background: var(--green);
+    label {
+      font-size:12px;
+      font-weight:bold;
+      display:block;
+      margin-bottom:4px;
     }
 
-    button.reset {
-      background: var(--red);
+    .winner, .final {
+      margin-top:10px;
+      padding:10px;
+      border-radius:12px;
+      font-size:13px;
+      font-weight:bold;
     }
 
-    .winner {
-      margin-top: 10px;
-      padding: 10px;
-      border-radius: 12px;
-      background: #ecfdf5;
-      color: #065f46;
-      font-size: 13px;
-      font-weight: bold;
-    }
+    .winner { background:#ecfdf5; color:#065f46; }
+    .final { background:#eff6ff; color:#1e3a8a; }
 
     .warning {
-      padding: 10px;
-      border-radius: 12px;
-      background: var(--amber-bg);
-      color: var(--amber-text);
-      font-size: 13px;
-      margin-top: 8px;
-      line-height: 1.4;
-    }
-
-    .final {
-      margin-top: 10px;
-      padding: 10px;
-      border-radius: 12px;
-      background: #eff6ff;
-      color: #1e3a8a;
-      font-size: 13px;
-      font-weight: bold;
+      padding:10px;
+      border-radius:12px;
+      background:var(--amber-bg);
+      color:var(--amber-text);
+      font-size:13px;
+      margin-top:8px;
+      line-height:1.4;
     }
 
     .actions {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-top: 10px;
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-top:10px;
     }
+
+    .admin-panel {
+      display:none;
+      border:1px dashed #c4b5fd;
+      background:#faf5ff;
+      border-radius:14px;
+      padding:12px;
+      margin-top:12px;
+    }
+
+    .admin-visible { display:block; }
 
     #status {
-      font-size: 12px;
-      color: var(--muted);
-      margin-bottom: 12px;
+      font-size:12px;
+      color:var(--muted);
+      margin-bottom:12px;
     }
 
-    @media (max-width: 480px) {
-      header h1 { font-size: 19px; }
-      .option {
-        align-items: flex-start;
-        flex-direction: column;
-      }
+    @media(max-width:480px){
+      header h1{font-size:19px;}
+      .option{align-items:flex-start; flex-direction:column;}
     }
   </style>
 </head>
 
 <body>
 <header>
-  <h1>JB Trip Decision Board</h1>
-  <p>Vote once per decision. Winners update live.</p>
+  <h1 id="eventTitle">Group Decision Board</h1>
+  <p id="eventDates">Vote once per decision. Winners update live.</p>
 </header>
 
 <main>
   <div id="status">Loading votes...</div>
+
+  <section class="section">
+    <h2>Admin</h2>
+    <div id="adminLogin">
+      <input id="adminPasscode" type="password" placeholder="Enter admin passcode" />
+      <button class="admin" onclick="loginAdmin()">Admin Login</button>
+    </div>
+
+    <div id="adminControls" class="admin-panel">
+      <label>Event Title</label>
+      <input id="adminEventTitle" placeholder="e.g. JB Trip Decision Board" />
+
+      <label>Event Dates / Subtitle</label>
+      <input id="adminEventDates" placeholder="e.g. 1–3 May 2026" />
+
+      <button class="admin" onclick="saveEventSettings()">Save Event Settings</button>
+    </div>
+  </section>
 
   <section class="section">
     <h2>Current Winners</h2>
@@ -219,12 +206,8 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import {
-    getFirestore,
-    doc,
-    setDoc,
-    updateDoc,
-    increment,
-    onSnapshot
+    getFirestore, doc, setDoc, updateDoc, increment, onSnapshot,
+    collection, addDoc, deleteDoc, getDocs
   } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
   const firebaseConfig = {
@@ -236,12 +219,15 @@
     appId: "PASTE_YOUR_APP_ID"
   };
 
+  const ADMIN_PASSCODE = "joel123";
+  const EVENT_ID = "jb-trip-2026";
+
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-  const EVENT_ID = "jb-trip-2026";
+  let isAdmin = localStorage.getItem("decisionBoardAdmin") === "1";
 
-  const decisions = [
+  const defaultDecisions = [
     {
       id: "day2-lunch",
       title: "Day 2 Lunch",
@@ -276,8 +262,14 @@
     }
   ];
 
+  let decisions = JSON.parse(JSON.stringify(defaultDecisions));
   const voteCounts = {};
   const finalChoices = {};
+  const eventSettings = {};
+
+  function slugify(text) {
+    return text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+  }
 
   function voteKey(decisionId) {
     return `decisionBoard_${EVENT_ID}_${decisionId}`;
@@ -299,6 +291,57 @@
     return doc(db, "events", EVENT_ID, "finalChoices", decisionId);
   }
 
+  function optionConfigPath(decisionId, optionId) {
+    return doc(db, "events", EVENT_ID, "optionConfig", decisionId, "options", optionId);
+  }
+
+  function eventSettingsPath() {
+    return doc(db, "events", EVENT_ID, "settings", "main");
+  }
+
+  function renderAdminState() {
+    if (!isAdmin) return;
+    document.getElementById("adminLogin").style.display = "none";
+    document.getElementById("adminControls").classList.add("admin-visible");
+  }
+
+  function loginAdmin() {
+    const pass = document.getElementById("adminPasscode").value;
+
+    if (pass === ADMIN_PASSCODE) {
+      isAdmin = true;
+      localStorage.setItem("decisionBoardAdmin", "1");
+      renderAdminState();
+      renderBoard();
+      document.getElementById("status").textContent = "Admin mode enabled.";
+    } else {
+      alert("Wrong passcode.");
+    }
+  }
+
+  async function saveEventSettings() {
+    const title = document.getElementById("adminEventTitle").value.trim();
+    const dates = document.getElementById("adminEventDates").value.trim();
+
+    await setDoc(eventSettingsPath(), {
+      title: title || "Group Decision Board",
+      dates: dates || "Vote once per decision. Winners update live.",
+      updatedAt: new Date().toISOString()
+    });
+
+    document.getElementById("status").textContent = "Event settings saved.";
+  }
+
+  function applyEventSettings() {
+    document.getElementById("eventTitle").textContent = eventSettings.title || "Group Decision Board";
+    document.getElementById("eventDates").textContent = eventSettings.dates || "Vote once per decision. Winners update live.";
+
+    if (isAdmin) {
+      document.getElementById("adminEventTitle").value = eventSettings.title || "";
+      document.getElementById("adminEventDates").value = eventSettings.dates || "";
+    }
+  }
+
   function renderBoard() {
     const board = document.getElementById("decisionBoard");
 
@@ -312,10 +355,11 @@
           <div class="option">
             <div class="option-main">
               <div class="option-title">${option.label}</div>
-              <div class="option-note">${option.note}</div>
+              <div class="option-note">${option.note || ""}</div>
             </div>
             <div class="votes">👍 ${count}</div>
             <button onclick="vote('${decision.id}', '${option.id}')" ${disabled}>${buttonText}</button>
+            ${isAdmin ? `<button class="delete" onclick="dropOption('${decision.id}', '${option.id}')">Drop</button>` : ""}
           </div>
         `;
       }).join("");
@@ -334,19 +378,27 @@
             Current winner: ${winner ? winner.label + " (" + winner.votes + " votes)" : "No votes yet"}
           </div>
 
-          ${finalChoice ? `
-            <div class="final">Finalised: ${finalChoice.label}</div>
-          ` : ""}
+          ${finalChoice ? `<div class="final">Finalised: ${finalChoice.label}</div>` : ""}
 
           <div class="actions">
             <button class="finalise" onclick="finaliseDecision('${decision.id}')">Finalise Current Winner</button>
             <button class="reset" onclick="resetMyVote('${decision.id}')">Reset My Vote</button>
           </div>
+
+          ${isAdmin ? `
+            <div class="admin-panel admin-visible">
+              <label>Add Option</label>
+              <input id="newLabel-${decision.id}" placeholder="Option name e.g. Restoran Todak" />
+              <input id="newNote-${decision.id}" placeholder="Short note e.g. seafood / good for group" />
+              <button class="admin" onclick="addOption('${decision.id}')">Add Option</button>
+            </div>
+          ` : ""}
         </div>
       `;
     }).join("");
 
     renderSummary();
+    renderAdminState();
   }
 
   function getWinner(decisionId) {
@@ -354,10 +406,7 @@
     if (!decision) return null;
 
     const ranked = decision.options
-      .map(option => ({
-        ...option,
-        votes: voteCounts[decisionId]?.[option.id] || 0
-      }))
+      .map(option => ({ ...option, votes: voteCounts[decisionId]?.[option.id] || 0 }))
       .sort((a, b) => b.votes - a.votes);
 
     if (!ranked.length || ranked[0].votes === 0) return null;
@@ -388,38 +437,70 @@
     }
   }
 
+  async function addOption(decisionId) {
+    if (!isAdmin) return alert("Admin only.");
+
+    const labelInput = document.getElementById(`newLabel-${decisionId}`);
+    const noteInput = document.getElementById(`newNote-${decisionId}`);
+
+    const label = labelInput.value.trim();
+    const note = noteInput.value.trim();
+
+    if (!label) return alert("Enter an option name.");
+
+    const optionId = slugify(label) || Date.now().toString();
+
+    await setDoc(optionConfigPath(decisionId, optionId), {
+      id: optionId,
+      label,
+      note,
+      active: true,
+      createdAt: new Date().toISOString()
+    });
+
+    labelInput.value = "";
+    noteInput.value = "";
+    document.getElementById("status").textContent = "Option added.";
+  }
+
+  async function dropOption(decisionId, optionId) {
+    if (!isAdmin) return alert("Admin only.");
+
+    const confirmed = confirm("Drop this option from the board? Existing votes will remain in Firestore but option will be hidden.");
+    if (!confirmed) return;
+
+    await setDoc(optionConfigPath(decisionId, optionId), {
+      id: optionId,
+      active: false,
+      droppedAt: new Date().toISOString()
+    }, { merge: true });
+
+    document.getElementById("status").textContent = "Option dropped.";
+  }
+
   async function finaliseDecision(decisionId) {
     const winner = getWinner(decisionId);
+    if (!winner) return alert("No winner yet.");
 
-    if (!winner) {
-      alert("No winner yet.");
-      return;
-    }
+    await setDoc(finalPath(decisionId), {
+      optionId: winner.id,
+      label: winner.label,
+      finalisedAt: new Date().toISOString()
+    });
 
-    try {
-      await setDoc(finalPath(decisionId), {
-        optionId: winner.id,
-        label: winner.label,
-        finalisedAt: new Date().toISOString()
-      });
-
-      document.getElementById("status").textContent = `${winner.label} finalised.`;
-    } catch (err) {
-      console.error(err);
-      document.getElementById("status").textContent = "Finalise failed. Check Firebase rules.";
-    }
+    document.getElementById("status").textContent = `${winner.label} finalised.`;
   }
 
   function resetMyVote(decisionId) {
     localStorage.removeItem(voteKey(decisionId));
-    document.getElementById("status").textContent = "Your local vote lock was reset. Note: this does not remove the previous Firebase vote count.";
+    document.getElementById("status").textContent = "Local vote lock reset. Firebase vote count is unchanged.";
     renderBoard();
   }
 
   function renderSummary() {
     const summary = document.getElementById("summary");
 
-    const lines = decisions.map(decision => {
+    summary.innerHTML = decisions.map(decision => {
       const finalChoice = finalChoices[decision.id];
       const winner = getWinner(decision.id);
 
@@ -429,9 +510,8 @@
           ${finalChoice ? finalChoice.label + " ✅" : winner ? winner.label : "No votes yet"}
         </div>
       `;
-    });
+    }).join("");
 
-    summary.innerHTML = lines.join("");
     renderWarnings();
   }
 
@@ -445,15 +525,11 @@
     const messages = [];
 
     if (catCafe === "day2-afternoon" && lunch === "delivery") {
-      messages.push("Cat cafe on Day 2 afternoon may clash with a slow lunch at the Airbnb. Keep lunch simple or leave earlier.");
+      messages.push("Cat cafe on Day 2 afternoon may clash with a slow lunch at the Airbnb.");
     }
 
     if (catCafe === "day2-afternoon" && dinner === "seafood") {
-      messages.push("Cat cafe + seafood dinner on Day 2 may be a heavier schedule. Consider Day 3 cat cafe if travelling far.");
-    }
-
-    if (lunch === "midvalley" && dinner === "seafood") {
-      messages.push("Mid Valley lunch + seafood dinner is workable, but check travel time and avoid overpacking the day.");
+      messages.push("Cat cafe + seafood dinner on Day 2 may be a heavier schedule.");
     }
 
     if (catCafe === "day3-morning") {
@@ -481,23 +557,62 @@
       });
 
       onSnapshot(finalPath(decision.id), snapshot => {
-        if (snapshot.exists()) {
-          finalChoices[decision.id] = snapshot.data();
-        } else {
-          delete finalChoices[decision.id];
-        }
+        if (snapshot.exists()) finalChoices[decision.id] = snapshot.data();
+        else delete finalChoices[decision.id];
 
         renderBoard();
       });
     });
   }
 
+  function listenToAdminOptions() {
+    decisions.forEach(decision => {
+      const optionsRef = collection(db, "events", EVENT_ID, "optionConfig", decision.id, "options");
+
+      onSnapshot(optionsRef, snapshot => {
+        const baseOptions = defaultDecisions.find(d => d.id === decision.id).options;
+        const optionMap = {};
+
+        baseOptions.forEach(option => {
+          optionMap[option.id] = { ...option, active: true };
+        });
+
+        snapshot.forEach(docSnap => {
+          const data = docSnap.data();
+          optionMap[data.id] = { ...optionMap[data.id], ...data };
+        });
+
+        decision.options = Object.values(optionMap).filter(option => option.active !== false);
+
+        renderBoard();
+        listenToVotes();
+      });
+    });
+  }
+
+  function listenToEventSettings() {
+    onSnapshot(eventSettingsPath(), snapshot => {
+      if (snapshot.exists()) {
+        Object.assign(eventSettings, snapshot.data());
+      }
+
+      applyEventSettings();
+    });
+  }
+
   window.vote = vote;
   window.finaliseDecision = finaliseDecision;
   window.resetMyVote = resetMyVote;
+  window.loginAdmin = loginAdmin;
+  window.saveEventSettings = saveEventSettings;
+  window.addOption = addOption;
+  window.dropOption = dropOption;
 
+  renderAdminState();
   renderBoard();
   listenToVotes();
+  listenToAdminOptions();
+  listenToEventSettings();
 </script>
 </body>
 </html>
