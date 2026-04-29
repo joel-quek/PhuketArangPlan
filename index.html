@@ -1,7 +1,3 @@
-<!-- same file: decision-board.html -->
-<!-- Admin passcode default: joel123 -->
-<!-- Search ADMIN_PASSCODE to change it -->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -13,7 +9,7 @@
     :root {
       --bg:#f7f7f7; --card:#fff; --dark:#111827; --muted:#6b7280;
       --border:#e5e7eb; --blue:#2563eb; --green:#059669; --red:#dc2626;
-      --amber-bg:#fffbeb; --amber-text:#92400e;
+      --purple:#7c3aed; --amber-bg:#fffbeb; --amber-text:#92400e;
     }
 
     * { box-sizing:border-box; }
@@ -35,7 +31,7 @@
     header p { margin:6px 0 0; font-size:13px; opacity:.85; }
 
     main {
-      max-width:800px;
+      max-width:850px;
       margin:0 auto;
       padding:14px;
     }
@@ -94,7 +90,8 @@
     button:disabled { background:#9ca3af; cursor:not-allowed; }
     button.finalise { background:var(--green); }
     button.reset, button.delete { background:var(--red); }
-    button.admin { background:#7c3aed; }
+    button.admin { background:var(--purple); }
+    button.small { padding:6px 9px; font-size:11px; }
 
     input {
       width:100%;
@@ -171,10 +168,11 @@
 </header>
 
 <main>
-  <div id="status">Loading votes...</div>
+  <div id="status">Loading...</div>
 
   <section class="section">
     <h2>Admin</h2>
+
     <div id="adminLogin">
       <input id="adminPasscode" type="password" placeholder="Enter admin passcode" />
       <button class="admin" onclick="loginAdmin()">Admin Login</button>
@@ -188,6 +186,13 @@
       <input id="adminEventDates" placeholder="e.g. 1–3 May 2026" />
 
       <button class="admin" onclick="saveEventSettings()">Save Event Settings</button>
+
+      <hr style="border:none; border-top:1px solid #ddd6fe; margin:14px 0;" />
+
+      <label>Add New Question</label>
+      <input id="newDecisionTitle" placeholder="e.g. Day 3 Breakfast" />
+      <input id="newDecisionSubtitle" placeholder="e.g. Where should we eat before checkout?" />
+      <button class="admin" onclick="addDecision()">Add Question</button>
     </div>
   </section>
 
@@ -206,8 +211,13 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import {
-    getFirestore, doc, setDoc, updateDoc, increment, onSnapshot,
-    collection, addDoc, deleteDoc, getDocs
+    getFirestore,
+    doc,
+    setDoc,
+    updateDoc,
+    increment,
+    onSnapshot,
+    collection
   } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
   const firebaseConfig = {
@@ -232,32 +242,38 @@
       id: "day2-lunch",
       title: "Day 2 Lunch",
       subtitle: "Where should we eat for lunch on Day 2?",
+      active: true,
+      order: 1,
       options: [
-        { id: "teck-sing", label: "Teck Sing", note: "Near KSL / group-friendly" },
-        { id: "midvalley", label: "Mid Valley Southkey", note: "Easy mall option, many choices" },
-        { id: "ksl", label: "KSL City Mall", note: "Very convenient, low planning effort" },
-        { id: "delivery", label: "Delivery to Airbnb", note: "Best if people arrive at different timings" }
+        { id: "teck-sing", label: "Teck Sing", note: "Near KSL / group-friendly", active: true },
+        { id: "midvalley", label: "Mid Valley Southkey", note: "Easy mall option, many choices", active: true },
+        { id: "ksl", label: "KSL City Mall", note: "Very convenient, low planning effort", active: true },
+        { id: "delivery", label: "Delivery to Airbnb", note: "Best if people arrive at different timings", active: true }
       ]
     },
     {
       id: "day2-dinner",
       title: "Day 2 Dinner",
       subtitle: "Where should we eat for dinner on Day 2?",
+      active: true,
+      order: 2,
       options: [
-        { id: "seafood", label: "Seafood Dinner", note: "Proper group meal" },
-        { id: "hotpot", label: "Hotpot", note: "Good for sharing" },
-        { id: "zi-char", label: "Zi Char", note: "Safe and flexible" },
-        { id: "delivery", label: "Delivery to Airbnb", note: "Most logistically simple" }
+        { id: "seafood", label: "Seafood Dinner", note: "Proper group meal", active: true },
+        { id: "hotpot", label: "Hotpot", note: "Good for sharing", active: true },
+        { id: "zi-char", label: "Zi Char", note: "Safe and flexible", active: true },
+        { id: "delivery", label: "Delivery to Airbnb", note: "Most logistically simple", active: true }
       ]
     },
     {
       id: "cat-cafe",
       title: "Cat Cafe Timing",
       subtitle: "When should we go cat cafe?",
+      active: true,
+      order: 3,
       options: [
-        { id: "day2-afternoon", label: "Day 2 Afternoon", note: "After lunch, before dinner" },
-        { id: "day3-morning", label: "Day 3 Morning", note: "Cleaner schedule, less rushed" },
-        { id: "skip", label: "Skip Cat Cafe", note: "Only if schedule too packed" }
+        { id: "day2-afternoon", label: "Day 2 Afternoon", note: "After lunch, before dinner", active: true },
+        { id: "day3-morning", label: "Day 3 Morning", note: "Cleaner schedule, less rushed", active: true },
+        { id: "skip", label: "Skip Cat Cafe", note: "Only if schedule too packed", active: true }
       ]
     }
   ];
@@ -284,19 +300,32 @@
   }
 
   function votePath(decisionId, optionId) {
-    return doc(db, "events", EVENT_ID, "decisions", decisionId, "options", optionId);
+    return doc(db, "events", EVENT_ID, "votes", decisionId, "options", optionId);
   }
 
   function finalPath(decisionId) {
     return doc(db, "events", EVENT_ID, "finalChoices", decisionId);
   }
 
+  function decisionConfigPath(decisionId) {
+    return doc(db, "events", EVENT_ID, "decisionConfig", decisionId);
+  }
+
   function optionConfigPath(decisionId, optionId) {
-    return doc(db, "events", EVENT_ID, "optionConfig", decisionId, "options", optionId);
+    return doc(db, "events", EVENT_ID, "decisionConfig", decisionId, "options", optionId);
   }
 
   function eventSettingsPath() {
     return doc(db, "events", EVENT_ID, "settings", "main");
+  }
+
+  function escapeHtml(text = "") {
+    return String(text)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
   }
 
   function renderAdminState() {
@@ -327,7 +356,7 @@
       title: title || "Group Decision Board",
       dates: dates || "Vote once per decision. Winners update live.",
       updatedAt: new Date().toISOString()
-    });
+    }, { merge: true });
 
     document.getElementById("status").textContent = "Event settings saved.";
   }
@@ -344,9 +373,20 @@
 
   function renderBoard() {
     const board = document.getElementById("decisionBoard");
+    const activeDecisions = decisions
+      .filter(d => d.active !== false)
+      .sort((a, b) => (a.order || 9999) - (b.order || 9999));
 
-    board.innerHTML = decisions.map(decision => {
-      const optionsHtml = decision.options.map(option => {
+    if (!activeDecisions.length) {
+      board.innerHTML = "<p>No active questions yet.</p>";
+      renderSummary();
+      return;
+    }
+
+    board.innerHTML = activeDecisions.map(decision => {
+      const activeOptions = (decision.options || []).filter(o => o.active !== false);
+
+      const optionsHtml = activeOptions.map(option => {
         const count = voteCounts[decision.id]?.[option.id] || 0;
         const disabled = hasVoted(decision.id) ? "disabled" : "";
         const buttonText = hasVoted(decision.id) ? "Voted" : "Vote";
@@ -354,12 +394,12 @@
         return `
           <div class="option">
             <div class="option-main">
-              <div class="option-title">${option.label}</div>
-              <div class="option-note">${option.note || ""}</div>
+              <div class="option-title">${escapeHtml(option.label)}</div>
+              <div class="option-note">${escapeHtml(option.note || "")}</div>
             </div>
             <div class="votes">👍 ${count}</div>
             <button onclick="vote('${decision.id}', '${option.id}')" ${disabled}>${buttonText}</button>
-            ${isAdmin ? `<button class="delete" onclick="dropOption('${decision.id}', '${option.id}')">Drop</button>` : ""}
+            ${isAdmin ? `<button class="delete small" onclick="dropOption('${decision.id}', '${option.id}')">Drop</button>` : ""}
           </div>
         `;
       }).join("");
@@ -369,16 +409,16 @@
 
       return `
         <div class="decision-card">
-          <div class="decision-title">${decision.title}</div>
-          <div class="decision-subtitle">${decision.subtitle}</div>
+          <div class="decision-title">${escapeHtml(decision.title)}</div>
+          <div class="decision-subtitle">${escapeHtml(decision.subtitle || "")}</div>
 
-          ${optionsHtml}
+          ${optionsHtml || "<p style='font-size:13px;color:#6b7280;'>No options yet.</p>"}
 
           <div class="winner">
-            Current winner: ${winner ? winner.label + " (" + winner.votes + " votes)" : "No votes yet"}
+            Current winner: ${winner ? escapeHtml(winner.label) + " (" + winner.votes + " votes)" : "No votes yet"}
           </div>
 
-          ${finalChoice ? `<div class="final">Finalised: ${finalChoice.label}</div>` : ""}
+          ${finalChoice ? `<div class="final">Finalised: ${escapeHtml(finalChoice.label)}</div>` : ""}
 
           <div class="actions">
             <button class="finalise" onclick="finaliseDecision('${decision.id}')">Finalise Current Winner</button>
@@ -387,6 +427,14 @@
 
           ${isAdmin ? `
             <div class="admin-panel admin-visible">
+              <label>Edit Question</label>
+              <input id="editTitle-${decision.id}" value="${escapeHtml(decision.title)}" />
+              <input id="editSubtitle-${decision.id}" value="${escapeHtml(decision.subtitle || "")}" />
+              <button class="admin" onclick="editDecision('${decision.id}')">Save Question</button>
+              <button class="delete" onclick="dropDecision('${decision.id}')">Drop Question</button>
+
+              <hr style="border:none; border-top:1px solid #ddd6fe; margin:14px 0;" />
+
               <label>Add Option</label>
               <input id="newLabel-${decision.id}" placeholder="Option name e.g. Restoran Todak" />
               <input id="newNote-${decision.id}" placeholder="Short note e.g. seafood / good for group" />
@@ -402,11 +450,15 @@
   }
 
   function getWinner(decisionId) {
-    const decision = decisions.find(d => d.id === decisionId);
+    const decision = decisions.find(d => d.id === decisionId && d.active !== false);
     if (!decision) return null;
 
-    const ranked = decision.options
-      .map(option => ({ ...option, votes: voteCounts[decisionId]?.[option.id] || 0 }))
+    const ranked = (decision.options || [])
+      .filter(option => option.active !== false)
+      .map(option => ({
+        ...option,
+        votes: voteCounts[decisionId]?.[option.id] || 0
+      }))
       .sort((a, b) => b.votes - a.votes);
 
     if (!ranked.length || ranked[0].votes === 0) return null;
@@ -415,7 +467,7 @@
 
   async function vote(decisionId, optionId) {
     if (hasVoted(decisionId)) {
-      document.getElementById("status").textContent = "You already voted for this decision on this device.";
+      document.getElementById("status").textContent = "You already voted for this question on this device.";
       return;
     }
 
@@ -437,6 +489,65 @@
     }
   }
 
+  async function addDecision() {
+    if (!isAdmin) return alert("Admin only.");
+
+    const title = document.getElementById("newDecisionTitle").value.trim();
+    const subtitle = document.getElementById("newDecisionSubtitle").value.trim();
+
+    if (!title) return alert("Enter a question title.");
+
+    const decisionId = slugify(title) || Date.now().toString();
+
+    await setDoc(decisionConfigPath(decisionId), {
+      id: decisionId,
+      title,
+      subtitle,
+      active: true,
+      order: Date.now(),
+      createdAt: new Date().toISOString()
+    }, { merge: true });
+
+    document.getElementById("newDecisionTitle").value = "";
+    document.getElementById("newDecisionSubtitle").value = "";
+
+    document.getElementById("status").textContent = "Question added.";
+  }
+
+  async function editDecision(decisionId) {
+    if (!isAdmin) return alert("Admin only.");
+
+    const title = document.getElementById(`editTitle-${decisionId}`).value.trim();
+    const subtitle = document.getElementById(`editSubtitle-${decisionId}`).value.trim();
+
+    if (!title) return alert("Question title cannot be empty.");
+
+    await setDoc(decisionConfigPath(decisionId), {
+      id: decisionId,
+      title,
+      subtitle,
+      active: true,
+      updatedAt: new Date().toISOString()
+    }, { merge: true });
+
+    document.getElementById("status").textContent = "Question updated.";
+  }
+
+  async function dropDecision(decisionId) {
+    if (!isAdmin) return alert("Admin only.");
+
+    const confirmed = confirm("Drop this question from the board?");
+    if (!confirmed) return;
+
+    await setDoc(decisionConfigPath(decisionId), {
+      id: decisionId,
+      active: false,
+      droppedAt: new Date().toISOString()
+    }, { merge: true });
+
+    document.getElementById("status").textContent = "Question dropped.";
+  }
+
   async function addOption(decisionId) {
     if (!isAdmin) return alert("Admin only.");
 
@@ -456,7 +567,7 @@
       note,
       active: true,
       createdAt: new Date().toISOString()
-    });
+    }, { merge: true });
 
     labelInput.value = "";
     noteInput.value = "";
@@ -466,7 +577,7 @@
   async function dropOption(decisionId, optionId) {
     if (!isAdmin) return alert("Admin only.");
 
-    const confirmed = confirm("Drop this option from the board? Existing votes will remain in Firestore but option will be hidden.");
+    const confirmed = confirm("Drop this option from the board? Existing votes remain but option will be hidden.");
     if (!confirmed) return;
 
     await setDoc(optionConfigPath(decisionId, optionId), {
@@ -499,15 +610,24 @@
 
   function renderSummary() {
     const summary = document.getElementById("summary");
+    const activeDecisions = decisions
+      .filter(d => d.active !== false)
+      .sort((a, b) => (a.order || 9999) - (b.order || 9999));
 
-    summary.innerHTML = decisions.map(decision => {
+    if (!activeDecisions.length) {
+      summary.innerHTML = "No active questions yet.";
+      renderWarnings();
+      return;
+    }
+
+    summary.innerHTML = activeDecisions.map(decision => {
       const finalChoice = finalChoices[decision.id];
       const winner = getWinner(decision.id);
 
       return `
         <div style="margin-bottom:8px;">
-          <strong>${decision.title}:</strong>
-          ${finalChoice ? finalChoice.label + " ✅" : winner ? winner.label : "No votes yet"}
+          <strong>${escapeHtml(decision.title)}:</strong>
+          ${finalChoice ? escapeHtml(finalChoice.label) + " ✅" : winner ? escapeHtml(winner.label) : "No votes yet"}
         </div>
       `;
     }).join("");
@@ -536,57 +656,131 @@
       messages.push("Cat cafe on Day 3 morning keeps Day 2 cleaner and less rushed.");
     }
 
-    warnings.innerHTML = messages.map(m => `<div class="warning">${m}</div>`).join("");
+    warnings.innerHTML = messages.map(m => `<div class="warning">${escapeHtml(m)}</div>`).join("");
   }
 
-  function listenToVotes() {
-    decisions.forEach(decision => {
-      voteCounts[decision.id] = {};
+  function rebuildDefaultDecision(decision) {
+    const existing = decisions.find(d => d.id === decision.id);
+    if (!existing) {
+      decisions.push(JSON.parse(JSON.stringify(decision)));
+    }
+  }
 
-      decision.options.forEach(option => {
-        const ref = votePath(decision.id, option.id);
+  function listenToDecisionConfig() {
+    defaultDecisions.forEach(rebuildDefaultDecision);
 
-        onSnapshot(ref, snapshot => {
-          voteCounts[decision.id][option.id] = snapshot.exists()
-            ? snapshot.data().count || 0
-            : 0;
+    const decisionRef = collection(db, "events", EVENT_ID, "decisionConfig");
 
-          renderBoard();
-          document.getElementById("status").textContent = "Votes synced.";
-        });
+    onSnapshot(decisionRef, snapshot => {
+      const decisionMap = {};
+
+      defaultDecisions.forEach(d => {
+        decisionMap[d.id] = JSON.parse(JSON.stringify(d));
       });
 
-      onSnapshot(finalPath(decision.id), snapshot => {
-        if (snapshot.exists()) finalChoices[decision.id] = snapshot.data();
-        else delete finalChoices[decision.id];
+      snapshot.forEach(docSnap => {
+        const data = docSnap.data();
+        if (!data.id) return;
+
+        if (!decisionMap[data.id]) {
+          decisionMap[data.id] = {
+            id: data.id,
+            title: data.title || "Untitled Question",
+            subtitle: data.subtitle || "",
+            active: data.active !== false,
+            order: data.order || Date.now(),
+            options: []
+          };
+        }
+
+        decisionMap[data.id] = {
+          ...decisionMap[data.id],
+          ...data,
+          options: decisionMap[data.id].options || []
+        };
+      });
+
+      decisions = Object.values(decisionMap);
+
+      decisions.forEach(decision => {
+        listenToOptions(decision.id);
+        listenToVotesForDecision(decision.id);
+        listenToFinalChoice(decision.id);
+      });
+
+      renderBoard();
+    });
+  }
+
+  const optionListenersStarted = new Set();
+
+  function listenToOptions(decisionId) {
+    if (optionListenersStarted.has(decisionId)) return;
+    optionListenersStarted.add(decisionId);
+
+    const optionsRef = collection(db, "events", EVENT_ID, "decisionConfig", decisionId, "options");
+
+    onSnapshot(optionsRef, snapshot => {
+      const decision = decisions.find(d => d.id === decisionId);
+      if (!decision) return;
+
+      const defaultDecision = defaultDecisions.find(d => d.id === decisionId);
+      const optionMap = {};
+
+      if (defaultDecision) {
+        defaultDecision.options.forEach(option => {
+          optionMap[option.id] = { ...option };
+        });
+      }
+
+      snapshot.forEach(docSnap => {
+        const data = docSnap.data();
+        if (!data.id) return;
+        optionMap[data.id] = { ...optionMap[data.id], ...data };
+      });
+
+      decision.options = Object.values(optionMap);
+      renderBoard();
+    });
+  }
+
+  const voteListenersStarted = new Set();
+
+  function listenToVotesForDecision(decisionId) {
+    const decision = decisions.find(d => d.id === decisionId);
+    if (!decision) return;
+
+    if (!voteCounts[decisionId]) voteCounts[decisionId] = {};
+
+    (decision.options || []).forEach(option => {
+      const listenerKey = `${decisionId}-${option.id}`;
+      if (voteListenersStarted.has(listenerKey)) return;
+      voteListenersStarted.add(listenerKey);
+
+      const ref = votePath(decisionId, option.id);
+
+      onSnapshot(ref, snapshot => {
+        voteCounts[decisionId][option.id] = snapshot.exists()
+          ? snapshot.data().count || 0
+          : 0;
 
         renderBoard();
+        document.getElementById("status").textContent = "Votes synced.";
       });
     });
   }
 
-  function listenToAdminOptions() {
-    decisions.forEach(decision => {
-      const optionsRef = collection(db, "events", EVENT_ID, "optionConfig", decision.id, "options");
+  const finalChoiceListenersStarted = new Set();
 
-      onSnapshot(optionsRef, snapshot => {
-        const baseOptions = defaultDecisions.find(d => d.id === decision.id).options;
-        const optionMap = {};
+  function listenToFinalChoice(decisionId) {
+    if (finalChoiceListenersStarted.has(decisionId)) return;
+    finalChoiceListenersStarted.add(decisionId);
 
-        baseOptions.forEach(option => {
-          optionMap[option.id] = { ...option, active: true };
-        });
+    onSnapshot(finalPath(decisionId), snapshot => {
+      if (snapshot.exists()) finalChoices[decisionId] = snapshot.data();
+      else delete finalChoices[decisionId];
 
-        snapshot.forEach(docSnap => {
-          const data = docSnap.data();
-          optionMap[data.id] = { ...optionMap[data.id], ...data };
-        });
-
-        decision.options = Object.values(optionMap).filter(option => option.active !== false);
-
-        renderBoard();
-        listenToVotes();
-      });
+      renderBoard();
     });
   }
 
@@ -605,13 +799,15 @@
   window.resetMyVote = resetMyVote;
   window.loginAdmin = loginAdmin;
   window.saveEventSettings = saveEventSettings;
+  window.addDecision = addDecision;
+  window.editDecision = editDecision;
+  window.dropDecision = dropDecision;
   window.addOption = addOption;
   window.dropOption = dropOption;
 
   renderAdminState();
   renderBoard();
-  listenToVotes();
-  listenToAdminOptions();
+  listenToDecisionConfig();
   listenToEventSettings();
 </script>
 </body>
