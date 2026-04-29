@@ -3,174 +3,170 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Group Decision Board</title>
+  <title>Simple Decision Board</title>
 
   <style>
-    :root {
-      --bg:#f7f7f7; --card:#fff; --dark:#111827; --muted:#6b7280;
-      --border:#e5e7eb; --blue:#2563eb; --green:#059669; --red:#dc2626;
-      --purple:#7c3aed; --amber-bg:#fffbeb; --amber-text:#92400e;
-    }
-
-    * { box-sizing:border-box; }
-
     body {
-      margin:0;
-      font-family:Arial,sans-serif;
-      background:var(--bg);
-      color:var(--dark);
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f7f7f7;
+      color: #111827;
     }
 
     header {
-      background:var(--dark);
-      color:white;
-      padding:18px 16px;
+      background: #111827;
+      color: white;
+      padding: 18px 16px;
     }
 
-    header h1 { margin:0; font-size:22px; }
-    header p { margin:6px 0 0; font-size:13px; opacity:.85; }
+    header h1 {
+      margin: 0;
+      font-size: 22px;
+    }
+
+    header p {
+      margin: 6px 0 0;
+      font-size: 13px;
+      opacity: 0.85;
+    }
 
     main {
-      max-width:850px;
-      margin:0 auto;
-      padding:14px;
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 14px;
     }
 
-    .section, .decision-card {
-      background:var(--card);
-      border:1px solid var(--border);
-      border-radius:16px;
-      padding:14px;
-      margin-bottom:14px;
-      box-shadow:0 2px 8px rgba(0,0,0,.04);
+    .card {
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
+      padding: 14px;
+      margin-bottom: 14px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
     }
 
-    h2 { margin:0 0 10px; font-size:17px; }
-
-    .decision-title {
-      font-size:16px;
-      font-weight:bold;
-      margin-bottom:4px;
+    h2 {
+      margin: 0 0 12px;
+      font-size: 17px;
     }
 
-    .decision-subtitle {
-      font-size:12px;
-      color:var(--muted);
-      margin-bottom:12px;
+    h3 {
+      margin: 0 0 6px;
+      font-size: 16px;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 8px;
+      border: 1px solid #d1d5db;
+      border-radius: 10px;
+      font-size: 14px;
+    }
+
+    button {
+      border: none;
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 13px;
+      color: white;
+      background: #2563eb;
+      cursor: pointer;
+      margin: 3px 3px 3px 0;
+    }
+
+    button.admin {
+      background: #7c3aed;
+    }
+
+    button.delete {
+      background: #dc2626;
+    }
+
+    button:disabled {
+      background: #9ca3af;
+      cursor: not-allowed;
     }
 
     .option {
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:10px;
-      border:1px solid var(--border);
-      border-radius:12px;
-      padding:10px;
-      margin-bottom:8px;
-      background:#fafafa;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      padding: 10px;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      margin-bottom: 8px;
+      background: #fafafa;
     }
 
-    .option-main { min-width:0; }
-    .option-title { font-weight:bold; font-size:14px; }
-    .option-note { font-size:12px; color:var(--muted); margin-top:3px; }
-    .votes { font-size:13px; font-weight:bold; white-space:nowrap; }
-
-    button {
-      border:none;
-      border-radius:999px;
-      padding:8px 11px;
-      font-size:12px;
-      color:white;
-      background:var(--blue);
-      cursor:pointer;
-      white-space:nowrap;
+    .option-name {
+      font-weight: bold;
+      font-size: 14px;
     }
 
-    button:disabled { background:#9ca3af; cursor:not-allowed; }
-    button.finalise { background:var(--green); }
-    button.reset, button.delete { background:var(--red); }
-    button.admin { background:var(--purple); }
-    button.small { padding:6px 9px; font-size:11px; }
-
-    input {
-      width:100%;
-      padding:9px 10px;
-      border:1px solid var(--border);
-      border-radius:10px;
-      margin-bottom:8px;
-      font-size:13px;
+    .votes {
+      font-weight: bold;
+      white-space: nowrap;
     }
 
-    label {
-      font-size:12px;
-      font-weight:bold;
-      display:block;
-      margin-bottom:4px;
+    .winner {
+      padding: 10px;
+      border-radius: 12px;
+      background: #ecfdf5;
+      color: #065f46;
+      font-size: 14px;
+      margin-bottom: 8px;
     }
 
-    .winner, .final {
-      margin-top:10px;
-      padding:10px;
-      border-radius:12px;
-      font-size:13px;
-      font-weight:bold;
+    .muted {
+      color: #6b7280;
+      font-size: 13px;
     }
 
-    .winner { background:#ecfdf5; color:#065f46; }
-    .final { background:#eff6ff; color:#1e3a8a; }
-
-    .warning {
-      padding:10px;
-      border-radius:12px;
-      background:var(--amber-bg);
-      color:var(--amber-text);
-      font-size:13px;
-      margin-top:8px;
-      line-height:1.4;
+    .admin-box {
+      display: none;
+      margin-top: 12px;
+      padding: 12px;
+      border: 1px dashed #c4b5fd;
+      border-radius: 14px;
+      background: #faf5ff;
     }
 
-    .actions {
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-      margin-top:10px;
+    .show {
+      display: block;
     }
-
-    .admin-panel {
-      display:none;
-      border:1px dashed #c4b5fd;
-      background:#faf5ff;
-      border-radius:14px;
-      padding:12px;
-      margin-top:12px;
-    }
-
-    .admin-visible { display:block; }
 
     #status {
-      font-size:12px;
-      color:var(--muted);
-      margin-bottom:12px;
+      font-size: 12px;
+      color: #6b7280;
+      margin-bottom: 12px;
     }
 
-    @media(max-width:480px){
-      header h1{font-size:19px;}
-      .option{align-items:flex-start; flex-direction:column;}
+    @media (max-width: 480px) {
+      .option {
+        flex-direction: column;
+        align-items: flex-start;
+      }
     }
   </style>
 </head>
 
 <body>
 <header>
-  <h1 id="eventTitle">Group Decision Board</h1>
-  <p id="eventDates">Vote once per decision. Winners update live.</p>
+  <h1>Simple Decision Board</h1>
+  <p>Add questions, add options, vote, and see winners.</p>
 </header>
 
 <main>
   <div id="status">Loading...</div>
 
-  <section class="section">
+  <section class="card">
+    <h2>Current Winners</h2>
+    <div id="winnerSummary" class="muted">No questions yet.</div>
+  </section>
+
+  <section class="card">
     <h2>Admin</h2>
 
     <div id="adminLogin">
@@ -178,33 +174,16 @@
       <button class="admin" onclick="loginAdmin()">Admin Login</button>
     </div>
 
-    <div id="adminControls" class="admin-panel">
-      <label>Event Title</label>
-      <input id="adminEventTitle" placeholder="e.g. JB Trip Decision Board" />
-
-      <label>Event Dates / Subtitle</label>
-      <input id="adminEventDates" placeholder="e.g. 1–3 May 2026" />
-
-      <button class="admin" onclick="saveEventSettings()">Save Event Settings</button>
-
-      <hr style="border:none; border-top:1px solid #ddd6fe; margin:14px 0;" />
-
-      <label>Add New Question</label>
-      <input id="newDecisionTitle" placeholder="e.g. Day 3 Breakfast" />
-      <input id="newDecisionSubtitle" placeholder="e.g. Where should we eat before checkout?" />
-      <button class="admin" onclick="addDecision()">Add Question</button>
+    <div id="adminPanel" class="admin-box">
+      <h3>Add New Question</h3>
+      <input id="newQuestionText" placeholder="e.g. Day 2 lunch eat where?" />
+      <button class="admin" onclick="addQuestion()">Add Question</button>
     </div>
   </section>
 
-  <section class="section">
-    <h2>Current Winners</h2>
-    <div id="summary">Waiting for votes...</div>
-    <div id="warnings"></div>
-  </section>
-
-  <section class="section">
-    <h2>Decisions</h2>
-    <div id="decisionBoard"></div>
+  <section class="card">
+    <h2>Questions</h2>
+    <div id="questionBoard" class="muted">No questions yet.</div>
   </section>
 </main>
 
@@ -212,12 +191,12 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import {
     getFirestore,
+    collection,
     doc,
     setDoc,
     updateDoc,
     increment,
-    onSnapshot,
-    collection
+    onSnapshot
   } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
   const firebaseConfig = {
@@ -230,93 +209,37 @@
   };
 
   const ADMIN_PASSCODE = "joel123";
-  const EVENT_ID = "jb-trip-2026";
+  const EVENT_ID = "simple-decision-board";
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-  let isAdmin = localStorage.getItem("decisionBoardAdmin") === "1";
-
-  const defaultDecisions = [
-    {
-      id: "day2-lunch",
-      title: "Day 2 Lunch",
-      subtitle: "Where should we eat for lunch on Day 2?",
-      active: true,
-      order: 1,
-      options: [
-        { id: "teck-sing", label: "Teck Sing", note: "Near KSL / group-friendly", active: true },
-        { id: "midvalley", label: "Mid Valley Southkey", note: "Easy mall option, many choices", active: true },
-        { id: "ksl", label: "KSL City Mall", note: "Very convenient, low planning effort", active: true },
-        { id: "delivery", label: "Delivery to Airbnb", note: "Best if people arrive at different timings", active: true }
-      ]
-    },
-    {
-      id: "day2-dinner",
-      title: "Day 2 Dinner",
-      subtitle: "Where should we eat for dinner on Day 2?",
-      active: true,
-      order: 2,
-      options: [
-        { id: "seafood", label: "Seafood Dinner", note: "Proper group meal", active: true },
-        { id: "hotpot", label: "Hotpot", note: "Good for sharing", active: true },
-        { id: "zi-char", label: "Zi Char", note: "Safe and flexible", active: true },
-        { id: "delivery", label: "Delivery to Airbnb", note: "Most logistically simple", active: true }
-      ]
-    },
-    {
-      id: "cat-cafe",
-      title: "Cat Cafe Timing",
-      subtitle: "When should we go cat cafe?",
-      active: true,
-      order: 3,
-      options: [
-        { id: "day2-afternoon", label: "Day 2 Afternoon", note: "After lunch, before dinner", active: true },
-        { id: "day3-morning", label: "Day 3 Morning", note: "Cleaner schedule, less rushed", active: true },
-        { id: "skip", label: "Skip Cat Cafe", note: "Only if schedule too packed", active: true }
-      ]
-    }
-  ];
-
-  let decisions = JSON.parse(JSON.stringify(defaultDecisions));
-  const voteCounts = {};
-  const finalChoices = {};
-  const eventSettings = {};
+  let isAdmin = localStorage.getItem("simpleDecisionAdmin") === "1";
+  let questions = [];
+  const votes = {};
 
   function slugify(text) {
     return text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
   }
 
-  function voteKey(decisionId) {
-    return `decisionBoard_${EVENT_ID}_${decisionId}`;
+  function questionPath(questionId) {
+    return doc(db, "events", EVENT_ID, "questions", questionId);
   }
 
-  function hasVoted(decisionId) {
-    return localStorage.getItem(voteKey(decisionId)) === "1";
+  function optionPath(questionId, optionId) {
+    return doc(db, "events", EVENT_ID, "questions", questionId, "options", optionId);
   }
 
-  function markVoted(decisionId) {
-    localStorage.setItem(voteKey(decisionId), "1");
+  function voteKey(questionId) {
+    return `simpleDecision_${EVENT_ID}_${questionId}`;
   }
 
-  function votePath(decisionId, optionId) {
-    return doc(db, "events", EVENT_ID, "votes", decisionId, "options", optionId);
+  function hasVoted(questionId) {
+    return localStorage.getItem(voteKey(questionId)) === "1";
   }
 
-  function finalPath(decisionId) {
-    return doc(db, "events", EVENT_ID, "finalChoices", decisionId);
-  }
-
-  function decisionConfigPath(decisionId) {
-    return doc(db, "events", EVENT_ID, "decisionConfig", decisionId);
-  }
-
-  function optionConfigPath(decisionId, optionId) {
-    return doc(db, "events", EVENT_ID, "decisionConfig", decisionId, "options", optionId);
-  }
-
-  function eventSettingsPath() {
-    return doc(db, "events", EVENT_ID, "settings", "main");
+  function markVoted(questionId) {
+    localStorage.setItem(voteKey(questionId), "1");
   }
 
   function escapeHtml(text = "") {
@@ -328,19 +251,13 @@
       .replaceAll("'", "&#039;");
   }
 
-  function renderAdminState() {
-    if (!isAdmin) return;
-    document.getElementById("adminLogin").style.display = "none";
-    document.getElementById("adminControls").classList.add("admin-visible");
-  }
-
   function loginAdmin() {
     const pass = document.getElementById("adminPasscode").value;
 
     if (pass === ADMIN_PASSCODE) {
       isAdmin = true;
-      localStorage.setItem("decisionBoardAdmin", "1");
-      renderAdminState();
+      localStorage.setItem("simpleDecisionAdmin", "1");
+      renderAdmin();
       renderBoard();
       document.getElementById("status").textContent = "Admin mode enabled.";
     } else {
@@ -348,184 +265,46 @@
     }
   }
 
-  async function saveEventSettings() {
-    const title = document.getElementById("adminEventTitle").value.trim();
-    const dates = document.getElementById("adminEventDates").value.trim();
+  function renderAdmin() {
+    if (!isAdmin) return;
 
-    await setDoc(eventSettingsPath(), {
-      title: title || "Group Decision Board",
-      dates: dates || "Vote once per decision. Winners update live.",
-      updatedAt: new Date().toISOString()
-    }, { merge: true });
-
-    document.getElementById("status").textContent = "Event settings saved.";
+    document.getElementById("adminLogin").style.display = "none";
+    document.getElementById("adminPanel").classList.add("show");
   }
 
-  function applyEventSettings() {
-    document.getElementById("eventTitle").textContent = eventSettings.title || "Group Decision Board";
-    document.getElementById("eventDates").textContent = eventSettings.dates || "Vote once per decision. Winners update live.";
-
-    if (isAdmin) {
-      document.getElementById("adminEventTitle").value = eventSettings.title || "";
-      document.getElementById("adminEventDates").value = eventSettings.dates || "";
-    }
-  }
-
-  function renderBoard() {
-    const board = document.getElementById("decisionBoard");
-    const activeDecisions = decisions
-      .filter(d => d.active !== false)
-      .sort((a, b) => (a.order || 9999) - (b.order || 9999));
-
-    if (!activeDecisions.length) {
-      board.innerHTML = "<p>No active questions yet.</p>";
-      renderSummary();
-      return;
-    }
-
-    board.innerHTML = activeDecisions.map(decision => {
-      const activeOptions = (decision.options || []).filter(o => o.active !== false);
-
-      const optionsHtml = activeOptions.map(option => {
-        const count = voteCounts[decision.id]?.[option.id] || 0;
-        const disabled = hasVoted(decision.id) ? "disabled" : "";
-        const buttonText = hasVoted(decision.id) ? "Voted" : "Vote";
-
-        return `
-          <div class="option">
-            <div class="option-main">
-              <div class="option-title">${escapeHtml(option.label)}</div>
-              <div class="option-note">${escapeHtml(option.note || "")}</div>
-            </div>
-            <div class="votes">👍 ${count}</div>
-            <button onclick="vote('${decision.id}', '${option.id}')" ${disabled}>${buttonText}</button>
-            ${isAdmin ? `<button class="delete small" onclick="dropOption('${decision.id}', '${option.id}')">Drop</button>` : ""}
-          </div>
-        `;
-      }).join("");
-
-      const winner = getWinner(decision.id);
-      const finalChoice = finalChoices[decision.id];
-
-      return `
-        <div class="decision-card">
-          <div class="decision-title">${escapeHtml(decision.title)}</div>
-          <div class="decision-subtitle">${escapeHtml(decision.subtitle || "")}</div>
-
-          ${optionsHtml || "<p style='font-size:13px;color:#6b7280;'>No options yet.</p>"}
-
-          <div class="winner">
-            Current winner: ${winner ? escapeHtml(winner.label) + " (" + winner.votes + " votes)" : "No votes yet"}
-          </div>
-
-          ${finalChoice ? `<div class="final">Finalised: ${escapeHtml(finalChoice.label)}</div>` : ""}
-
-          <div class="actions">
-            <button class="finalise" onclick="finaliseDecision('${decision.id}')">Finalise Current Winner</button>
-            <button class="reset" onclick="resetMyVote('${decision.id}')">Reset My Vote</button>
-          </div>
-
-          ${isAdmin ? `
-            <div class="admin-panel admin-visible">
-              <label>Edit Question</label>
-              <input id="editTitle-${decision.id}" value="${escapeHtml(decision.title)}" />
-              <input id="editSubtitle-${decision.id}" value="${escapeHtml(decision.subtitle || "")}" />
-              <button class="admin" onclick="editDecision('${decision.id}')">Save Question</button>
-              <button class="delete" onclick="dropDecision('${decision.id}')">Drop Question</button>
-
-              <hr style="border:none; border-top:1px solid #ddd6fe; margin:14px 0;" />
-
-              <label>Add Option</label>
-              <input id="newLabel-${decision.id}" placeholder="Option name e.g. Restoran Todak" />
-              <input id="newNote-${decision.id}" placeholder="Short note e.g. seafood / good for group" />
-              <button class="admin" onclick="addOption('${decision.id}')">Add Option</button>
-            </div>
-          ` : ""}
-        </div>
-      `;
-    }).join("");
-
-    renderSummary();
-    renderAdminState();
-  }
-
-  function getWinner(decisionId) {
-    const decision = decisions.find(d => d.id === decisionId && d.active !== false);
-    if (!decision) return null;
-
-    const ranked = (decision.options || [])
-      .filter(option => option.active !== false)
-      .map(option => ({
-        ...option,
-        votes: voteCounts[decisionId]?.[option.id] || 0
-      }))
-      .sort((a, b) => b.votes - a.votes);
-
-    if (!ranked.length || ranked[0].votes === 0) return null;
-    return ranked[0];
-  }
-
-  async function vote(decisionId, optionId) {
-    if (hasVoted(decisionId)) {
-      document.getElementById("status").textContent = "You already voted for this question on this device.";
-      return;
-    }
-
-    try {
-      const ref = votePath(decisionId, optionId);
-
-      try {
-        await updateDoc(ref, { count: increment(1) });
-      } catch {
-        await setDoc(ref, { count: 1 });
-      }
-
-      markVoted(decisionId);
-      document.getElementById("status").textContent = "Vote submitted.";
-      renderBoard();
-    } catch (err) {
-      console.error(err);
-      document.getElementById("status").textContent = "Vote failed. Check Firebase config/rules.";
-    }
-  }
-
-  async function addDecision() {
+  async function addQuestion() {
     if (!isAdmin) return alert("Admin only.");
 
-    const title = document.getElementById("newDecisionTitle").value.trim();
-    const subtitle = document.getElementById("newDecisionSubtitle").value.trim();
+    const input = document.getElementById("newQuestionText");
+    const text = input.value.trim();
 
-    if (!title) return alert("Enter a question title.");
+    if (!text) return alert("Enter a question.");
 
-    const decisionId = slugify(title) || Date.now().toString();
+    const questionId = slugify(text) || Date.now().toString();
 
-    await setDoc(decisionConfigPath(decisionId), {
-      id: decisionId,
-      title,
-      subtitle,
+    await setDoc(questionPath(questionId), {
+      id: questionId,
+      text,
       active: true,
       order: Date.now(),
       createdAt: new Date().toISOString()
     }, { merge: true });
 
-    document.getElementById("newDecisionTitle").value = "";
-    document.getElementById("newDecisionSubtitle").value = "";
-
+    input.value = "";
     document.getElementById("status").textContent = "Question added.";
   }
 
-  async function editDecision(decisionId) {
+  async function editQuestion(questionId) {
     if (!isAdmin) return alert("Admin only.");
 
-    const title = document.getElementById(`editTitle-${decisionId}`).value.trim();
-    const subtitle = document.getElementById(`editSubtitle-${decisionId}`).value.trim();
+    const input = document.getElementById(`editQuestion-${questionId}`);
+    const text = input.value.trim();
 
-    if (!title) return alert("Question title cannot be empty.");
+    if (!text) return alert("Question cannot be empty.");
 
-    await setDoc(decisionConfigPath(decisionId), {
-      id: decisionId,
-      title,
-      subtitle,
+    await setDoc(questionPath(questionId), {
+      id: questionId,
+      text,
       active: true,
       updatedAt: new Date().toISOString()
     }, { merge: true });
@@ -533,282 +312,219 @@
     document.getElementById("status").textContent = "Question updated.";
   }
 
-  async function dropDecision(decisionId) {
+  async function deleteQuestion(questionId) {
     if (!isAdmin) return alert("Admin only.");
 
-    const confirmed = confirm("Drop this question from the board?");
-    if (!confirmed) return;
+    if (!confirm("Hide this question? Existing data will remain in Firebase.")) return;
 
-    await setDoc(decisionConfigPath(decisionId), {
-      id: decisionId,
+    await setDoc(questionPath(questionId), {
+      id: questionId,
       active: false,
-      droppedAt: new Date().toISOString()
+      deletedAt: new Date().toISOString()
     }, { merge: true });
 
-    document.getElementById("status").textContent = "Question dropped.";
+    document.getElementById("status").textContent = "Question hidden.";
   }
 
-  async function addOption(decisionId) {
+  async function addOption(questionId) {
     if (!isAdmin) return alert("Admin only.");
 
-    const labelInput = document.getElementById(`newLabel-${decisionId}`);
-    const noteInput = document.getElementById(`newNote-${decisionId}`);
+    const input = document.getElementById(`newOption-${questionId}`);
+    const text = input.value.trim();
 
-    const label = labelInput.value.trim();
-    const note = noteInput.value.trim();
+    if (!text) return alert("Enter an option.");
 
-    if (!label) return alert("Enter an option name.");
+    const optionId = slugify(text) || Date.now().toString();
 
-    const optionId = slugify(label) || Date.now().toString();
-
-    await setDoc(optionConfigPath(decisionId, optionId), {
+    await setDoc(optionPath(questionId, optionId), {
       id: optionId,
-      label,
-      note,
+      text,
       active: true,
+      count: 0,
       createdAt: new Date().toISOString()
     }, { merge: true });
 
-    labelInput.value = "";
-    noteInput.value = "";
+    input.value = "";
     document.getElementById("status").textContent = "Option added.";
   }
 
-  async function dropOption(decisionId, optionId) {
+  async function deleteOption(questionId, optionId) {
     if (!isAdmin) return alert("Admin only.");
 
-    const confirmed = confirm("Drop this option from the board? Existing votes remain but option will be hidden.");
-    if (!confirmed) return;
+    if (!confirm("Hide this option? Existing votes will remain in Firebase.")) return;
 
-    await setDoc(optionConfigPath(decisionId, optionId), {
+    await setDoc(optionPath(questionId, optionId), {
       id: optionId,
       active: false,
-      droppedAt: new Date().toISOString()
+      deletedAt: new Date().toISOString()
     }, { merge: true });
 
-    document.getElementById("status").textContent = "Option dropped.";
+    document.getElementById("status").textContent = "Option hidden.";
   }
 
-  async function finaliseDecision(decisionId) {
-    const winner = getWinner(decisionId);
-    if (!winner) return alert("No winner yet.");
-
-    await setDoc(finalPath(decisionId), {
-      optionId: winner.id,
-      label: winner.label,
-      finalisedAt: new Date().toISOString()
-    });
-
-    document.getElementById("status").textContent = `${winner.label} finalised.`;
-  }
-
-  function resetMyVote(decisionId) {
-    localStorage.removeItem(voteKey(decisionId));
-    document.getElementById("status").textContent = "Local vote lock reset. Firebase vote count is unchanged.";
-    renderBoard();
-  }
-
-  function renderSummary() {
-    const summary = document.getElementById("summary");
-    const activeDecisions = decisions
-      .filter(d => d.active !== false)
-      .sort((a, b) => (a.order || 9999) - (b.order || 9999));
-
-    if (!activeDecisions.length) {
-      summary.innerHTML = "No active questions yet.";
-      renderWarnings();
+  async function vote(questionId, optionId) {
+    if (hasVoted(questionId)) {
+      document.getElementById("status").textContent = "You already voted for this question on this device.";
       return;
     }
 
-    summary.innerHTML = activeDecisions.map(decision => {
-      const finalChoice = finalChoices[decision.id];
-      const winner = getWinner(decision.id);
+    try {
+      const ref = optionPath(questionId, optionId);
+
+      await updateDoc(ref, {
+        count: increment(1)
+      });
+
+      markVoted(questionId);
+      document.getElementById("status").textContent = "Vote submitted.";
+    } catch (err) {
+      console.error(err);
+      document.getElementById("status").textContent = "Vote failed. Check Firebase rules/config.";
+    }
+  }
+
+  function getWinner(question) {
+    const activeOptions = (question.options || []).filter(o => o.active !== false);
+
+    if (!activeOptions.length) return null;
+
+    const ranked = [...activeOptions].sort((a, b) => (b.count || 0) - (a.count || 0));
+
+    if ((ranked[0].count || 0) === 0) return null;
+
+    return ranked[0];
+  }
+
+  function renderWinners() {
+    const box = document.getElementById("winnerSummary");
+    const activeQuestions = questions.filter(q => q.active !== false);
+
+    if (!activeQuestions.length) {
+      box.innerHTML = "No questions yet.";
+      return;
+    }
+
+    box.innerHTML = activeQuestions.map(q => {
+      const winner = getWinner(q);
 
       return `
-        <div style="margin-bottom:8px;">
-          <strong>${escapeHtml(decision.title)}:</strong>
-          ${finalChoice ? escapeHtml(finalChoice.label) + " ✅" : winner ? escapeHtml(winner.label) : "No votes yet"}
+        <div class="winner">
+          <strong>${escapeHtml(q.text)}</strong><br>
+          ${winner ? escapeHtml(winner.text) + " — 👍 " + (winner.count || 0) : "No votes yet"}
+        </div>
+      `;
+    }).join("");
+  }
+
+  function renderBoard() {
+    const board = document.getElementById("questionBoard");
+    const activeQuestions = questions
+      .filter(q => q.active !== false)
+      .sort((a, b) => (a.order || 0) - (b.order || 0));
+
+    if (!activeQuestions.length) {
+      board.innerHTML = "No questions yet.";
+      renderWinners();
+      return;
+    }
+
+    board.innerHTML = activeQuestions.map(q => {
+      const activeOptions = (q.options || []).filter(o => o.active !== false);
+
+      const optionsHtml = activeOptions.length
+        ? activeOptions.map(o => `
+          <div class="option">
+            <div class="option-name">${escapeHtml(o.text)}</div>
+            <div class="votes">👍 ${o.count || 0}</div>
+            <button onclick="vote('${q.id}', '${o.id}')" ${hasVoted(q.id) ? "disabled" : ""}>
+              ${hasVoted(q.id) ? "Voted" : "Vote"}
+            </button>
+            ${isAdmin ? `<button class="delete" onclick="deleteOption('${q.id}', '${o.id}')">Delete</button>` : ""}
+          </div>
+        `).join("")
+        : `<div class="muted">No options yet.</div>`;
+
+      return `
+        <div class="card">
+          <h3>${escapeHtml(q.text)}</h3>
+
+          ${optionsHtml}
+
+          ${isAdmin ? `
+            <div class="admin-box show">
+              <input id="editQuestion-${q.id}" value="${escapeHtml(q.text)}" />
+              <button class="admin" onclick="editQuestion('${q.id}')">Save Question</button>
+              <button class="delete" onclick="deleteQuestion('${q.id}')">Delete Question</button>
+
+              <hr style="border:none;border-top:1px solid #ddd6fe;margin:12px 0;" />
+
+              <input id="newOption-${q.id}" placeholder="Add option" />
+              <button class="admin" onclick="addOption('${q.id}')">Add Option</button>
+            </div>
+          ` : ""}
         </div>
       `;
     }).join("");
 
-    renderWarnings();
+    renderWinners();
+    renderAdmin();
   }
 
-  function renderWarnings() {
-    const warnings = document.getElementById("warnings");
+  function listenQuestions() {
+    const qRef = collection(db, "events", EVENT_ID, "questions");
 
-    const lunch = finalChoices["day2-lunch"]?.optionId || getWinner("day2-lunch")?.id;
-    const dinner = finalChoices["day2-dinner"]?.optionId || getWinner("day2-dinner")?.id;
-    const catCafe = finalChoices["cat-cafe"]?.optionId || getWinner("cat-cafe")?.id;
-
-    const messages = [];
-
-    if (catCafe === "day2-afternoon" && lunch === "delivery") {
-      messages.push("Cat cafe on Day 2 afternoon may clash with a slow lunch at the Airbnb.");
-    }
-
-    if (catCafe === "day2-afternoon" && dinner === "seafood") {
-      messages.push("Cat cafe + seafood dinner on Day 2 may be a heavier schedule.");
-    }
-
-    if (catCafe === "day3-morning") {
-      messages.push("Cat cafe on Day 3 morning keeps Day 2 cleaner and less rushed.");
-    }
-
-    warnings.innerHTML = messages.map(m => `<div class="warning">${escapeHtml(m)}</div>`).join("");
-  }
-
-  function rebuildDefaultDecision(decision) {
-    const existing = decisions.find(d => d.id === decision.id);
-    if (!existing) {
-      decisions.push(JSON.parse(JSON.stringify(decision)));
-    }
-  }
-
-  function listenToDecisionConfig() {
-    defaultDecisions.forEach(rebuildDefaultDecision);
-
-    const decisionRef = collection(db, "events", EVENT_ID, "decisionConfig");
-
-    onSnapshot(decisionRef, snapshot => {
-      const decisionMap = {};
-
-      defaultDecisions.forEach(d => {
-        decisionMap[d.id] = JSON.parse(JSON.stringify(d));
-      });
+    onSnapshot(qRef, snapshot => {
+      questions = [];
 
       snapshot.forEach(docSnap => {
-        const data = docSnap.data();
-        if (!data.id) return;
-
-        if (!decisionMap[data.id]) {
-          decisionMap[data.id] = {
-            id: data.id,
-            title: data.title || "Untitled Question",
-            subtitle: data.subtitle || "",
-            active: data.active !== false,
-            order: data.order || Date.now(),
-            options: []
-          };
-        }
-
-        decisionMap[data.id] = {
-          ...decisionMap[data.id],
-          ...data,
-          options: decisionMap[data.id].options || []
-        };
-      });
-
-      decisions = Object.values(decisionMap);
-
-      decisions.forEach(decision => {
-        listenToOptions(decision.id);
-        listenToVotesForDecision(decision.id);
-        listenToFinalChoice(decision.id);
-      });
-
-      renderBoard();
-    });
-  }
-
-  const optionListenersStarted = new Set();
-
-  function listenToOptions(decisionId) {
-    if (optionListenersStarted.has(decisionId)) return;
-    optionListenersStarted.add(decisionId);
-
-    const optionsRef = collection(db, "events", EVENT_ID, "decisionConfig", decisionId, "options");
-
-    onSnapshot(optionsRef, snapshot => {
-      const decision = decisions.find(d => d.id === decisionId);
-      if (!decision) return;
-
-      const defaultDecision = defaultDecisions.find(d => d.id === decisionId);
-      const optionMap = {};
-
-      if (defaultDecision) {
-        defaultDecision.options.forEach(option => {
-          optionMap[option.id] = { ...option };
+        questions.push({
+          id: docSnap.id,
+          ...docSnap.data(),
+          options: []
         });
-      }
+      });
+
+      questions.forEach(q => listenOptions(q.id));
+      renderBoard();
+      document.getElementById("status").textContent = "Synced.";
+    });
+  }
+
+  const optionListeners = new Set();
+
+  function listenOptions(questionId) {
+    if (optionListeners.has(questionId)) return;
+    optionListeners.add(questionId);
+
+    const oRef = collection(db, "events", EVENT_ID, "questions", questionId, "options");
+
+    onSnapshot(oRef, snapshot => {
+      const question = questions.find(q => q.id === questionId);
+      if (!question) return;
+
+      question.options = [];
 
       snapshot.forEach(docSnap => {
-        const data = docSnap.data();
-        if (!data.id) return;
-        optionMap[data.id] = { ...optionMap[data.id], ...data };
+        question.options.push({
+          id: docSnap.id,
+          ...docSnap.data()
+        });
       });
-
-      decision.options = Object.values(optionMap);
-      renderBoard();
-    });
-  }
-
-  const voteListenersStarted = new Set();
-
-  function listenToVotesForDecision(decisionId) {
-    const decision = decisions.find(d => d.id === decisionId);
-    if (!decision) return;
-
-    if (!voteCounts[decisionId]) voteCounts[decisionId] = {};
-
-    (decision.options || []).forEach(option => {
-      const listenerKey = `${decisionId}-${option.id}`;
-      if (voteListenersStarted.has(listenerKey)) return;
-      voteListenersStarted.add(listenerKey);
-
-      const ref = votePath(decisionId, option.id);
-
-      onSnapshot(ref, snapshot => {
-        voteCounts[decisionId][option.id] = snapshot.exists()
-          ? snapshot.data().count || 0
-          : 0;
-
-        renderBoard();
-        document.getElementById("status").textContent = "Votes synced.";
-      });
-    });
-  }
-
-  const finalChoiceListenersStarted = new Set();
-
-  function listenToFinalChoice(decisionId) {
-    if (finalChoiceListenersStarted.has(decisionId)) return;
-    finalChoiceListenersStarted.add(decisionId);
-
-    onSnapshot(finalPath(decisionId), snapshot => {
-      if (snapshot.exists()) finalChoices[decisionId] = snapshot.data();
-      else delete finalChoices[decisionId];
 
       renderBoard();
     });
   }
 
-  function listenToEventSettings() {
-    onSnapshot(eventSettingsPath(), snapshot => {
-      if (snapshot.exists()) {
-        Object.assign(eventSettings, snapshot.data());
-      }
-
-      applyEventSettings();
-    });
-  }
-
-  window.vote = vote;
-  window.finaliseDecision = finaliseDecision;
-  window.resetMyVote = resetMyVote;
   window.loginAdmin = loginAdmin;
-  window.saveEventSettings = saveEventSettings;
-  window.addDecision = addDecision;
-  window.editDecision = editDecision;
-  window.dropDecision = dropDecision;
+  window.addQuestion = addQuestion;
+  window.editQuestion = editQuestion;
+  window.deleteQuestion = deleteQuestion;
   window.addOption = addOption;
-  window.dropOption = dropOption;
+  window.deleteOption = deleteOption;
+  window.vote = vote;
 
-  renderAdminState();
-  renderBoard();
-  listenToDecisionConfig();
-  listenToEventSettings();
+  renderAdmin();
+  listenQuestions();
 </script>
 </body>
 </html>
