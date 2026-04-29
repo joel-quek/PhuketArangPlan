@@ -6,62 +6,149 @@
   <title>Phuket Arang Decision Board</title>
 
   <style>
-    body { margin:0; font-family:Arial,sans-serif; background:#f7f7f7; color:#111827; }
-    header { background:#111827; color:white; padding:18px 16px; }
-    header h1 { margin:0; font-size:22px; }
-    header p { margin:6px 0 0; font-size:13px; opacity:.85; }
-    main { max-width:760px; margin:0 auto; padding:14px; }
-
-    .card {
-      background:white; border:1px solid #e5e7eb; border-radius:16px;
-      padding:14px; margin-bottom:14px; box-shadow:0 2px 8px rgba(0,0,0,.04);
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f7f7f7;
+      color: #111827;
     }
 
-    h2 { margin:0 0 12px; font-size:17px; }
-    h3 { margin:0 0 8px; font-size:16px; }
+    header {
+      background: #111827;
+      color: white;
+      padding: 18px 16px;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 22px;
+    }
+
+    header p {
+      margin: 6px 0 0;
+      font-size: 13px;
+      opacity: 0.85;
+    }
+
+    main {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 14px;
+    }
+
+    .card {
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
+      padding: 14px;
+      margin-bottom: 14px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+
+    h2 {
+      margin: 0 0 12px;
+      font-size: 17px;
+    }
+
+    h3 {
+      margin: 0 0 8px;
+      font-size: 16px;
+    }
 
     input {
-      width:100%; padding:10px; margin-bottom:8px;
-      border:1px solid #d1d5db; border-radius:10px; font-size:14px;
-      box-sizing:border-box;
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 8px;
+      border: 1px solid #d1d5db;
+      border-radius: 10px;
+      font-size: 14px;
+      box-sizing: border-box;
     }
 
     button {
-      border:none; border-radius:999px; padding:8px 12px; font-size:13px;
-      color:white; background:#2563eb; cursor:pointer; margin:3px 3px 3px 0;
+      border: none;
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 13px;
+      color: white;
+      background: #2563eb;
+      cursor: pointer;
+      margin: 3px 3px 3px 0;
     }
 
-    button.admin { background:#7c3aed; }
-    button.delete { background:#dc2626; }
-    button:disabled { background:#9ca3af; cursor:not-allowed; }
+    button.admin {
+      background: #7c3aed;
+    }
+
+    button.delete {
+      background: #dc2626;
+    }
+
+    button:disabled {
+      background: #9ca3af;
+      cursor: not-allowed;
+    }
 
     .option {
-      display:flex; justify-content:space-between; align-items:center; gap:8px;
-      padding:10px; border:1px solid #e5e7eb; border-radius:12px;
-      margin-bottom:8px; background:#fafafa;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      padding: 10px;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      margin-bottom: 8px;
+      background: #fafafa;
     }
 
-    .option-name { font-weight:bold; font-size:14px; }
-    .votes { font-weight:bold; white-space:nowrap; }
+    .option-name {
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    .votes {
+      font-weight: bold;
+      white-space: nowrap;
+    }
 
     .winner {
-      padding:10px; border-radius:12px; background:#ecfdf5; color:#065f46;
-      font-size:14px; margin-bottom:8px;
+      padding: 10px;
+      border-radius: 12px;
+      background: #ecfdf5;
+      color: #065f46;
+      font-size: 14px;
+      margin-bottom: 8px;
     }
 
-    .muted { color:#6b7280; font-size:13px; }
+    .muted {
+      color: #6b7280;
+      font-size: 13px;
+    }
 
     .admin-box {
-      display:none; margin-top:12px; padding:12px;
-      border:1px dashed #c4b5fd; border-radius:14px; background:#faf5ff;
+      display: none;
+      margin-top: 12px;
+      padding: 12px;
+      border: 1px dashed #c4b5fd;
+      border-radius: 14px;
+      background: #faf5ff;
     }
 
-    .show { display:block; }
+    .show {
+      display: block;
+    }
 
-    #status { font-size:12px; color:#6b7280; margin-bottom:12px; }
+    #status {
+      font-size: 12px;
+      color: #6b7280;
+      margin-bottom: 12px;
+    }
 
-    @media(max-width:480px) {
-      .option { flex-direction:column; align-items:flex-start; }
+    @media (max-width: 480px) {
+      .option {
+        flex-direction: column;
+        align-items: flex-start;
+      }
     }
   </style>
 </head>
@@ -114,27 +201,22 @@
   } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
   const firebaseConfig = {
-    apiKey: "PASTE_YOUR_API_KEY",
-    authDomain: "PASTE_YOUR_AUTH_DOMAIN",
-    projectId: "PASTE_YOUR_PROJECT_ID",
-    storageBucket: "PASTE_YOUR_STORAGE_BUCKET",
-    messagingSenderId: "PASTE_YOUR_MESSAGING_SENDER_ID",
-    appId: "PASTE_YOUR_APP_ID"
+    apiKey: "PASTE_YOUR_REAL_API_KEY",
+    authDomain: "PASTE_YOUR_REAL_AUTH_DOMAIN",
+    projectId: "PASTE_YOUR_REAL_PROJECT_ID",
+    storageBucket: "PASTE_YOUR_REAL_STORAGE_BUCKET",
+    messagingSenderId: "PASTE_YOUR_REAL_MESSAGING_SENDER_ID",
+    appId: "PASTE_YOUR_REAL_APP_ID"
   };
 
   const ADMIN_PASSCODE = "joel123";
-
-  // IMPORTANT: keep this exactly the same on all devices/pages.
   const EVENT_ID = "phuket-arang-decision-board";
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-  let isAdmin = localStorage.getItem("phuketArangDecisionAdmin") === "1";
-
+  let isAdmin = localStorage.getItem("phuketArangAdmin") === "1";
   let questions = [];
-  const optionsByQuestion = {};
-  const optionListeners = new Set();
 
   function slugify(text) {
     return text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
@@ -149,7 +231,7 @@
   }
 
   function voteKey(questionId) {
-    return `phuketArangDecision_${EVENT_ID}_${questionId}`;
+    return `phuketArangVote_${EVENT_ID}_${questionId}`;
   }
 
   function hasVoted(questionId) {
@@ -174,7 +256,7 @@
 
     if (pass === ADMIN_PASSCODE) {
       isAdmin = true;
-      localStorage.setItem("phuketArangDecisionAdmin", "1");
+      localStorage.setItem("phuketArangAdmin", "1");
       renderAdmin();
       renderBoard();
       document.getElementById("status").textContent = "Admin mode enabled.";
@@ -185,6 +267,7 @@
 
   function renderAdmin() {
     if (!isAdmin) return;
+
     document.getElementById("adminLogin").style.display = "none";
     document.getElementById("adminPanel").classList.add("show");
   }
@@ -212,7 +295,7 @@
       document.getElementById("status").textContent = "Question added.";
     } catch (err) {
       console.error(err);
-      document.getElementById("status").textContent = "Failed to add question. Check Firebase rules/config.";
+      document.getElementById("status").textContent = "Question failed to save. Check Firebase config/rules.";
     }
   }
 
@@ -232,15 +315,16 @@
         updatedAt: new Date().toISOString()
       }, { merge: true });
 
-      document.getElementById("status").textContent = "Question updated.";
+      document.getElementById("status").textContent = "Question saved.";
     } catch (err) {
       console.error(err);
-      document.getElementById("status").textContent = "Failed to update question.";
+      document.getElementById("status").textContent = "Question failed to save. Check Firebase config/rules.";
     }
   }
 
   async function deleteQuestion(questionId) {
     if (!isAdmin) return alert("Admin only.");
+
     if (!confirm("Hide this question? Existing data will remain in Firebase.")) return;
 
     try {
@@ -280,12 +364,13 @@
       document.getElementById("status").textContent = "Option added.";
     } catch (err) {
       console.error(err);
-      document.getElementById("status").textContent = "Failed to add option.";
+      document.getElementById("status").textContent = "Option failed to save. Check Firebase config/rules.";
     }
   }
 
   async function deleteOption(questionId, optionId) {
     if (!isAdmin) return alert("Admin only.");
+
     if (!confirm("Hide this option? Existing votes will remain in Firebase.")) return;
 
     try {
@@ -317,18 +402,12 @@
       document.getElementById("status").textContent = "Vote submitted.";
     } catch (err) {
       console.error(err);
-      document.getElementById("status").textContent = "Vote failed. Check Firebase rules/config.";
+      document.getElementById("status").textContent = "Vote failed. Check Firebase config/rules.";
     }
   }
 
-  function getOptions(questionId) {
-    return (optionsByQuestion[questionId] || [])
-      .filter(o => o.active !== false)
-      .sort((a, b) => (a.order || 0) - (b.order || 0));
-  }
-
-  function getWinner(questionId) {
-    const activeOptions = getOptions(questionId);
+  function getWinner(question) {
+    const activeOptions = (question.options || []).filter(o => o.active !== false);
 
     if (!activeOptions.length) return null;
 
@@ -341,9 +420,7 @@
 
   function renderWinners() {
     const box = document.getElementById("winnerSummary");
-    const activeQuestions = questions
-      .filter(q => q.active !== false)
-      .sort((a, b) => (a.order || 0) - (b.order || 0));
+    const activeQuestions = questions.filter(q => q.active !== false);
 
     if (!activeQuestions.length) {
       box.innerHTML = "No questions yet.";
@@ -351,7 +428,7 @@
     }
 
     box.innerHTML = activeQuestions.map(q => {
-      const winner = getWinner(q.id);
+      const winner = getWinner(q);
 
       return `
         <div class="winner">
@@ -364,6 +441,7 @@
 
   function renderBoard() {
     const board = document.getElementById("questionBoard");
+
     const activeQuestions = questions
       .filter(q => q.active !== false)
       .sort((a, b) => (a.order || 0) - (b.order || 0));
@@ -376,7 +454,7 @@
     }
 
     board.innerHTML = activeQuestions.map(q => {
-      const activeOptions = getOptions(q.id);
+      const activeOptions = (q.options || []).filter(o => o.active !== false);
 
       const optionsHtml = activeOptions.length
         ? activeOptions.map(o => `
@@ -420,46 +498,53 @@
   function listenQuestions() {
     const qRef = collection(db, "events", EVENT_ID, "questions");
 
-    onSnapshot(qRef, snapshot => {
-      questions = [];
+    onSnapshot(qRef, questionSnapshot => {
+      const loadedQuestions = [];
 
-      snapshot.forEach(docSnap => {
-        questions.push({
-          id: docSnap.id,
-          ...docSnap.data()
+      let pendingOptions = questionSnapshot.size;
+
+      if (pendingOptions === 0) {
+        questions = [];
+        renderBoard();
+        document.getElementById("status").textContent = "Synced. No questions yet.";
+        return;
+      }
+
+      questionSnapshot.forEach(questionDoc => {
+        const question = {
+          id: questionDoc.id,
+          ...questionDoc.data(),
+          options: []
+        };
+
+        const optionRef = collection(db, "events", EVENT_ID, "questions", question.id, "options");
+
+        onSnapshot(optionRef, optionSnapshot => {
+          question.options = [];
+
+          optionSnapshot.forEach(optionDoc => {
+            question.options.push({
+              id: optionDoc.id,
+              ...optionDoc.data()
+            });
+          });
+
+          const existingIndex = loadedQuestions.findIndex(q => q.id === question.id);
+
+          if (existingIndex >= 0) {
+            loadedQuestions[existingIndex] = question;
+          } else {
+            loadedQuestions.push(question);
+          }
+
+          questions = loadedQuestions;
+          renderBoard();
+          document.getElementById("status").textContent = "Synced.";
         });
       });
-
-      questions.forEach(q => listenOptions(q.id));
-
-      renderBoard();
-      document.getElementById("status").textContent = "Synced.";
     }, err => {
       console.error(err);
-      document.getElementById("status").textContent = "Failed to read questions. Check Firebase rules/config.";
-    });
-  }
-
-  function listenOptions(questionId) {
-    if (optionListeners.has(questionId)) return;
-    optionListeners.add(questionId);
-
-    const oRef = collection(db, "events", EVENT_ID, "questions", questionId, "options");
-
-    onSnapshot(oRef, snapshot => {
-      optionsByQuestion[questionId] = [];
-
-      snapshot.forEach(docSnap => {
-        optionsByQuestion[questionId].push({
-          id: docSnap.id,
-          ...docSnap.data()
-        });
-      });
-
-      renderBoard();
-    }, err => {
-      console.error(err);
-      document.getElementById("status").textContent = "Failed to read options. Check Firebase rules/config.";
+      document.getElementById("status").textContent = "Failed to load questions. Check Firebase config/rules.";
     });
   }
 
