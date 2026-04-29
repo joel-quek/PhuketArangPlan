@@ -1,563 +1,269 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Phuket Arang Decision Board</title>
+  <title>Decision Board</title>
+
+  <!-- Firebase COMPAT (important) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 
   <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f7f7f7;
-      color: #111827;
-    }
-
-    header {
-      background: #111827;
-      color: white;
-      padding: 18px 16px;
-    }
-
-    header h1 {
-      margin: 0;
-      font-size: 22px;
-    }
-
-    header p {
-      margin: 6px 0 0;
-      font-size: 13px;
-      opacity: 0.85;
-    }
-
-    main {
-      max-width: 760px;
-      margin: 0 auto;
-      padding: 14px;
-    }
+    body { font-family: Arial; background:#f5f5f5; margin:0; }
+    header { background:#111; color:white; padding:16px; }
+    main { max-width:700px; margin:auto; padding:12px; }
 
     .card {
-      background: white;
-      border: 1px solid #e5e7eb;
-      border-radius: 16px;
-      padding: 14px;
-      margin-bottom: 14px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-    }
-
-    h2 {
-      margin: 0 0 12px;
-      font-size: 17px;
-    }
-
-    h3 {
-      margin: 0 0 8px;
-      font-size: 16px;
+      background:white;
+      padding:12px;
+      margin-bottom:12px;
+      border-radius:10px;
+      border:1px solid #ddd;
     }
 
     input {
-      width: 100%;
-      padding: 10px;
-      margin-bottom: 8px;
-      border: 1px solid #d1d5db;
-      border-radius: 10px;
-      font-size: 14px;
-      box-sizing: border-box;
+      width:100%;
+      padding:8px;
+      margin:6px 0;
+      border-radius:6px;
+      border:1px solid #ccc;
     }
 
     button {
-      border: none;
-      border-radius: 999px;
-      padding: 8px 12px;
-      font-size: 13px;
-      color: white;
-      background: #2563eb;
-      cursor: pointer;
-      margin: 3px 3px 3px 0;
+      padding:6px 10px;
+      border:none;
+      border-radius:999px;
+      background:#2563eb;
+      color:white;
+      cursor:pointer;
+      margin:3px;
     }
 
-    button.admin {
-      background: #7c3aed;
-    }
-
-    button.delete {
-      background: #dc2626;
-    }
-
-    button:disabled {
-      background: #9ca3af;
-      cursor: not-allowed;
-    }
+    .admin { background:#7c3aed; }
+    .delete { background:#dc2626; }
 
     .option {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 8px;
-      padding: 10px;
-      border: 1px solid #e5e7eb;
-      border-radius: 12px;
-      margin-bottom: 8px;
-      background: #fafafa;
-    }
-
-    .option-name {
-      font-weight: bold;
-      font-size: 14px;
-    }
-
-    .votes {
-      font-weight: bold;
-      white-space: nowrap;
+      display:flex;
+      justify-content:space-between;
+      margin:6px 0;
+      padding:8px;
+      border:1px solid #eee;
+      border-radius:6px;
+      background:#fafafa;
     }
 
     .winner {
-      padding: 10px;
-      border-radius: 12px;
-      background: #ecfdf5;
-      color: #065f46;
-      font-size: 14px;
-      margin-bottom: 8px;
-    }
-
-    .muted {
-      color: #6b7280;
-      font-size: 13px;
-    }
-
-    .admin-box {
-      display: none;
-      margin-top: 12px;
-      padding: 12px;
-      border: 1px dashed #c4b5fd;
-      border-radius: 14px;
-      background: #faf5ff;
-    }
-
-    .show {
-      display: block;
-    }
-
-    #status {
-      font-size: 12px;
-      color: #6b7280;
-      margin-bottom: 12px;
-    }
-
-    @media (max-width: 480px) {
-      .option {
-        flex-direction: column;
-        align-items: flex-start;
-      }
+      background:#ecfdf5;
+      padding:8px;
+      border-radius:6px;
+      margin-bottom:6px;
     }
   </style>
 </head>
 
 <body>
 <header>
-  <h1>Phuket Arang Decision Board</h1>
-  <p>Add questions, add options, vote, and see winners.</p>
+  <h2>Decision Board</h2>
 </header>
 
 <main>
-  <div id="status">Loading...</div>
 
-  <section class="card">
-    <h2>Current Winners</h2>
-    <div id="winnerSummary" class="muted">No questions yet.</div>
-  </section>
+  <div class="card">
+    <h3>Winners</h3>
+    <div id="winners"></div>
+  </div>
 
-  <section class="card">
-    <h2>Admin</h2>
+  <div class="card">
+    <h3>Admin</h3>
 
-    <div id="adminLogin">
-      <input id="adminPasscode" type="password" placeholder="Enter admin passcode" />
-      <button class="admin" onclick="loginAdmin()">Admin Login</button>
+    <input id="pass" placeholder="passcode"/>
+    <button class="admin" onclick="login()">Login</button>
+
+    <div id="adminPanel" style="display:none;">
+      <input id="newQ" placeholder="Add question"/>
+      <button onclick="addQuestion()">Add Question</button>
     </div>
+  </div>
 
-    <div id="adminPanel" class="admin-box">
-      <h3>Add New Question</h3>
-      <input id="newQuestionText" placeholder="e.g. Day 2 lunch eat where?" />
-      <button class="admin" onclick="addQuestion()">Add Question</button>
-    </div>
-  </section>
+  <div id="board"></div>
 
-  <section class="card">
-    <h2>Questions</h2>
-    <div id="questionBoard" class="muted">No questions yet.</div>
-  </section>
 </main>
 
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import {
-    getFirestore,
-    collection,
-    doc,
-    setDoc,
-    updateDoc,
-    increment,
-    onSnapshot
-  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
+<script>
+  // 🔴 PUT YOUR REAL CONFIG HERE
   const firebaseConfig = {
-    apiKey: "PASTE_YOUR_REAL_API_KEY",
-    authDomain: "PASTE_YOUR_REAL_AUTH_DOMAIN",
-    projectId: "PASTE_YOUR_REAL_PROJECT_ID",
-    storageBucket: "PASTE_YOUR_REAL_STORAGE_BUCKET",
-    messagingSenderId: "PASTE_YOUR_REAL_MESSAGING_SENDER_ID",
-    appId: "PASTE_YOUR_REAL_APP_ID"
+    apiKey: "YOUR_KEY",
+    authDomain: "YOUR_DOMAIN",
+    projectId: "YOUR_PROJECT_ID"
   };
 
-  const ADMIN_PASSCODE = "joel123";
-  const EVENT_ID = "phuket-arang-decision-board";
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
 
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
+  const EVENT_ID = "decision-board";
+  const PASS = "joel123";
 
-  let isAdmin = localStorage.getItem("phuketArangAdmin") === "1";
-  let questions = [];
+  let isAdmin = false;
 
-  function slugify(text) {
-    return text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
-  }
-
-  function questionPath(questionId) {
-    return doc(db, "events", EVENT_ID, "questions", questionId);
-  }
-
-  function optionPath(questionId, optionId) {
-    return doc(db, "events", EVENT_ID, "questions", questionId, "options", optionId);
-  }
-
-  function voteKey(questionId) {
-    return `phuketArangVote_${EVENT_ID}_${questionId}`;
-  }
-
-  function hasVoted(questionId) {
-    return localStorage.getItem(voteKey(questionId)) === "1";
-  }
-
-  function markVoted(questionId) {
-    localStorage.setItem(voteKey(questionId), "1");
-  }
-
-  function escapeHtml(text = "") {
-    return String(text)
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
-  }
-
-  function loginAdmin() {
-    const pass = document.getElementById("adminPasscode").value;
-
-    if (pass === ADMIN_PASSCODE) {
+  function login() {
+    if (document.getElementById("pass").value === PASS) {
       isAdmin = true;
-      localStorage.setItem("phuketArangAdmin", "1");
-      renderAdmin();
-      renderBoard();
-      document.getElementById("status").textContent = "Admin mode enabled.";
+      document.getElementById("adminPanel").style.display = "block";
     } else {
-      alert("Wrong passcode.");
+      alert("wrong pass");
     }
   }
 
-  function renderAdmin() {
-    if (!isAdmin) return;
-
-    document.getElementById("adminLogin").style.display = "none";
-    document.getElementById("adminPanel").classList.add("show");
+  function qRef(id) {
+    return db.collection("events").doc(EVENT_ID)
+      .collection("questions").doc(id);
   }
 
-  async function addQuestion() {
-    if (!isAdmin) return alert("Admin only.");
-
-    const input = document.getElementById("newQuestionText");
-    const text = input.value.trim();
-
-    if (!text) return alert("Enter a question.");
-
-    const questionId = slugify(text) || Date.now().toString();
-
-    try {
-      await setDoc(questionPath(questionId), {
-        id: questionId,
-        text,
-        active: true,
-        order: Date.now(),
-        createdAt: new Date().toISOString()
-      }, { merge: true });
-
-      input.value = "";
-      document.getElementById("status").textContent = "Question added.";
-    } catch (err) {
-      console.error(err);
-      document.getElementById("status").textContent = "Question failed to save. Check Firebase config/rules.";
-    }
+  function optRef(q, o) {
+    return qRef(q).collection("options").doc(o);
   }
 
-  async function editQuestion(questionId) {
-    if (!isAdmin) return alert("Admin only.");
+  function addQuestion() {
+    const text = document.getElementById("newQ").value.trim();
+    if (!text) return;
 
-    const input = document.getElementById(`editQuestion-${questionId}`);
-    const text = input.value.trim();
+    const id = Date.now().toString();
 
-    if (!text) return alert("Question cannot be empty.");
+    qRef(id).set({
+      text: text,
+      order: Date.now()
+    });
 
-    try {
-      await setDoc(questionPath(questionId), {
-        id: questionId,
-        text,
-        active: true,
-        updatedAt: new Date().toISOString()
-      }, { merge: true });
-
-      document.getElementById("status").textContent = "Question saved.";
-    } catch (err) {
-      console.error(err);
-      document.getElementById("status").textContent = "Question failed to save. Check Firebase config/rules.";
-    }
+    document.getElementById("newQ").value = "";
   }
 
-  async function deleteQuestion(questionId) {
-    if (!isAdmin) return alert("Admin only.");
+  function saveQuestion(id) {
+    const val = document.getElementById("edit-" + id).value;
 
-    if (!confirm("Hide this question? Existing data will remain in Firebase.")) return;
-
-    try {
-      await setDoc(questionPath(questionId), {
-        id: questionId,
-        active: false,
-        deletedAt: new Date().toISOString()
-      }, { merge: true });
-
-      document.getElementById("status").textContent = "Question hidden.";
-    } catch (err) {
-      console.error(err);
-      document.getElementById("status").textContent = "Failed to hide question.";
-    }
-  }
-
-  async function addOption(questionId) {
-    if (!isAdmin) return alert("Admin only.");
-
-    const input = document.getElementById(`newOption-${questionId}`);
-    const text = input.value.trim();
-
-    if (!text) return alert("Enter an option.");
-
-    const optionId = slugify(text) || Date.now().toString();
-
-    try {
-      await setDoc(optionPath(questionId, optionId), {
-        id: optionId,
-        text,
-        active: true,
-        count: 0,
-        createdAt: new Date().toISOString()
-      }, { merge: true });
-
-      input.value = "";
-      document.getElementById("status").textContent = "Option added.";
-    } catch (err) {
-      console.error(err);
-      document.getElementById("status").textContent = "Option failed to save. Check Firebase config/rules.";
-    }
-  }
-
-  async function deleteOption(questionId, optionId) {
-    if (!isAdmin) return alert("Admin only.");
-
-    if (!confirm("Hide this option? Existing votes will remain in Firebase.")) return;
-
-    try {
-      await setDoc(optionPath(questionId, optionId), {
-        id: optionId,
-        active: false,
-        deletedAt: new Date().toISOString()
-      }, { merge: true });
-
-      document.getElementById("status").textContent = "Option hidden.";
-    } catch (err) {
-      console.error(err);
-      document.getElementById("status").textContent = "Failed to hide option.";
-    }
-  }
-
-  async function vote(questionId, optionId) {
-    if (hasVoted(questionId)) {
-      document.getElementById("status").textContent = "You already voted for this question on this device.";
-      return;
-    }
-
-    try {
-      await updateDoc(optionPath(questionId, optionId), {
-        count: increment(1)
-      });
-
-      markVoted(questionId);
-      document.getElementById("status").textContent = "Vote submitted.";
-    } catch (err) {
-      console.error(err);
-      document.getElementById("status").textContent = "Vote failed. Check Firebase config/rules.";
-    }
-  }
-
-  function getWinner(question) {
-    const activeOptions = (question.options || []).filter(o => o.active !== false);
-
-    if (!activeOptions.length) return null;
-
-    const ranked = [...activeOptions].sort((a, b) => (b.count || 0) - (a.count || 0));
-
-    if ((ranked[0].count || 0) === 0) return null;
-
-    return ranked[0];
-  }
-
-  function renderWinners() {
-    const box = document.getElementById("winnerSummary");
-    const activeQuestions = questions.filter(q => q.active !== false);
-
-    if (!activeQuestions.length) {
-      box.innerHTML = "No questions yet.";
-      return;
-    }
-
-    box.innerHTML = activeQuestions.map(q => {
-      const winner = getWinner(q);
-
-      return `
-        <div class="winner">
-          <strong>${escapeHtml(q.text)}</strong><br>
-          ${winner ? escapeHtml(winner.text) + " — 👍 " + (winner.count || 0) : "No votes yet"}
-        </div>
-      `;
-    }).join("");
-  }
-
-  function renderBoard() {
-    const board = document.getElementById("questionBoard");
-
-    const activeQuestions = questions
-      .filter(q => q.active !== false)
-      .sort((a, b) => (a.order || 0) - (b.order || 0));
-
-    if (!activeQuestions.length) {
-      board.innerHTML = "No questions yet.";
-      renderWinners();
-      renderAdmin();
-      return;
-    }
-
-    board.innerHTML = activeQuestions.map(q => {
-      const activeOptions = (q.options || []).filter(o => o.active !== false);
-
-      const optionsHtml = activeOptions.length
-        ? activeOptions.map(o => `
-          <div class="option">
-            <div class="option-name">${escapeHtml(o.text)}</div>
-            <div class="votes">👍 ${o.count || 0}</div>
-            <button onclick="vote('${q.id}', '${o.id}')" ${hasVoted(q.id) ? "disabled" : ""}>
-              ${hasVoted(q.id) ? "Voted" : "Vote"}
-            </button>
-            ${isAdmin ? `<button class="delete" onclick="deleteOption('${q.id}', '${o.id}')">Delete</button>` : ""}
-          </div>
-        `).join("")
-        : `<div class="muted">No options yet.</div>`;
-
-      return `
-        <div class="card">
-          <h3>${escapeHtml(q.text)}</h3>
-
-          ${optionsHtml}
-
-          ${isAdmin ? `
-            <div class="admin-box show">
-              <input id="editQuestion-${q.id}" value="${escapeHtml(q.text)}" />
-              <button class="admin" onclick="editQuestion('${q.id}')">Save Question</button>
-              <button class="delete" onclick="deleteQuestion('${q.id}')">Delete Question</button>
-
-              <hr style="border:none;border-top:1px solid #ddd6fe;margin:12px 0;" />
-
-              <input id="newOption-${q.id}" placeholder="Add option" />
-              <button class="admin" onclick="addOption('${q.id}')">Add Option</button>
-            </div>
-          ` : ""}
-        </div>
-      `;
-    }).join("");
-
-    renderWinners();
-    renderAdmin();
-  }
-
-  function listenQuestions() {
-    const qRef = collection(db, "events", EVENT_ID, "questions");
-
-    onSnapshot(qRef, questionSnapshot => {
-      const loadedQuestions = [];
-
-      let pendingOptions = questionSnapshot.size;
-
-      if (pendingOptions === 0) {
-        questions = [];
-        renderBoard();
-        document.getElementById("status").textContent = "Synced. No questions yet.";
-        return;
-      }
-
-      questionSnapshot.forEach(questionDoc => {
-        const question = {
-          id: questionDoc.id,
-          ...questionDoc.data(),
-          options: []
-        };
-
-        const optionRef = collection(db, "events", EVENT_ID, "questions", question.id, "options");
-
-        onSnapshot(optionRef, optionSnapshot => {
-          question.options = [];
-
-          optionSnapshot.forEach(optionDoc => {
-            question.options.push({
-              id: optionDoc.id,
-              ...optionDoc.data()
-            });
-          });
-
-          const existingIndex = loadedQuestions.findIndex(q => q.id === question.id);
-
-          if (existingIndex >= 0) {
-            loadedQuestions[existingIndex] = question;
-          } else {
-            loadedQuestions.push(question);
-          }
-
-          questions = loadedQuestions;
-          renderBoard();
-          document.getElementById("status").textContent = "Synced.";
-        });
-      });
-    }, err => {
-      console.error(err);
-      document.getElementById("status").textContent = "Failed to load questions. Check Firebase config/rules.";
+    qRef(id).update({
+      text: val
     });
   }
 
-  window.loginAdmin = loginAdmin;
-  window.addQuestion = addQuestion;
-  window.editQuestion = editQuestion;
-  window.deleteQuestion = deleteQuestion;
-  window.addOption = addOption;
-  window.deleteOption = deleteOption;
-  window.vote = vote;
+  function deleteQuestion(id) {
+    qRef(id).delete();
+  }
 
-  renderAdmin();
-  listenQuestions();
+  function addOption(qid) {
+    const val = document.getElementById("opt-" + qid).value;
+    if (!val) return;
+
+    const id = Date.now().toString();
+
+    optRef(qid, id).set({
+      text: val,
+      votes: 0
+    });
+
+    document.getElementById("opt-" + qid).value = "";
+  }
+
+  function vote(qid, oid) {
+    const key = "vote_" + qid;
+
+    if (localStorage.getItem(key)) {
+      alert("already voted");
+      return;
+    }
+
+    optRef(qid, oid).update({
+      votes: firebase.firestore.FieldValue.increment(1)
+    });
+
+    localStorage.setItem(key, "1");
+  }
+
+  function render(questions, options) {
+    const board = document.getElementById("board");
+    const winners = document.getElementById("winners");
+
+    board.innerHTML = "";
+    winners.innerHTML = "";
+
+    questions.sort((a,b)=>a.order-b.order);
+
+    questions.forEach(q => {
+
+      const opts = options[q.id] || [];
+
+      // winner
+      let top = null;
+      opts.forEach(o=>{
+        if (!top || o.votes > top.votes) top = o;
+      });
+
+      if (top) {
+        winners.innerHTML += `
+          <div class="winner">
+            <b>${q.text}</b><br>
+            ${top.text} (${top.votes})
+          </div>
+        `;
+      }
+
+      let html = `
+        <div class="card">
+          <h3>${q.text}</h3>
+      `;
+
+      opts.forEach(o=>{
+        html += `
+          <div class="option">
+            ${o.text} (${o.votes})
+            <button onclick="vote('${q.id}','${o.id}')">Vote</button>
+          </div>
+        `;
+      });
+
+      if (isAdmin) {
+        html += `
+          <input id="edit-${q.id}" value="${q.text}">
+          <button onclick="saveQuestion('${q.id}')">Save</button>
+          <button class="delete" onclick="deleteQuestion('${q.id}')">Delete</button>
+
+          <hr>
+
+          <input id="opt-${q.id}" placeholder="add option">
+          <button onclick="addOption('${q.id}')">Add Option</button>
+        `;
+      }
+
+      html += "</div>";
+      board.innerHTML += html;
+    });
+  }
+
+  function listen() {
+    const qCol = db.collection("events").doc(EVENT_ID).collection("questions");
+
+    qCol.onSnapshot(qSnap => {
+      const questions = [];
+      const options = {};
+
+      qSnap.forEach(qDoc=>{
+        const q = { id:qDoc.id, ...qDoc.data() };
+        questions.push(q);
+
+        qCol.doc(q.id).collection("options")
+          .onSnapshot(oSnap=>{
+            options[q.id] = [];
+            oSnap.forEach(o=>{
+              options[q.id].push({ id:o.id, ...o.data() });
+            });
+            render(questions, options);
+          });
+      });
+
+      render(questions, options);
+    });
+  }
+
+  listen();
 </script>
 </body>
 </html>
