@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JB Trip Decision Board</title>
+
+  <style>
+    :root {
+      --bg: #f7f7f7;
+      --card: #ffffff;
+      --dark: #111827;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --blue: #2563eb;
+      --green: #059669;
+      --red: #dc2626;
+      --amber-bg: #fffbeb;
+      --amber-text: #92400e;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: var(--bg);
+      color: var(--dark);
+    }
+
+    header {
+      background: var(--dark);
+      color: white;
+      padding: 18px 16px;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 22px;
+    }
+
+    header p {
+      margin: 6px 0 0;
+      font-size: 13px;
+      opacity: 0.85;
+    }
+
+    main {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 14px;
+    }
+
+    .section {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px;
+      margin-bottom: 14px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+
+    .section h2 {
+      margin: 0 0 10px;
+      font-size: 17px;
+    }
+
+    .decision-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+      margin-bottom: 12px;
+    }
+
+    .decision-title {
+      font-size: 16px;
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+
+    .decision-subtitle {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    .option {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px;
+      margin-bottom: 8px;
+      background: #fafafa;
+    }
+
+    .option-main {
+      min-width: 0;
+    }
+
+    .option-title {
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    .option-note {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+
+    .votes {
+      font-size: 13px;
+      font-weight: bold;
+      white-space: nowrap;
+    }
+
+    button {
+      border: none;
+      border-radius: 999px;
+      padding: 8px 11px;
+      font-size: 12px;
+      color: white;
+      background: var(--blue);
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    button:disabled {
+      background: #9ca3af;
+      cursor: not-allowed;
+    }
+
+    button.finalise {
+      background: var(--green);
+    }
+
+    button.reset {
+      background: var(--red);
+    }
+
+    .winner {
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 12px;
+      background: #ecfdf5;
+      color: #065f46;
+      font-size: 13px;
+      font-weight: bold;
+    }
+
+    .warning {
+      padding: 10px;
+      border-radius: 12px;
+      background: var(--amber-bg);
+      color: var(--amber-text);
+      font-size: 13px;
+      margin-top: 8px;
+      line-height: 1.4;
+    }
+
+    .final {
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 12px;
+      background: #eff6ff;
+      color: #1e3a8a;
+      font-size: 13px;
+      font-weight: bold;
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    #status {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    @media (max-width: 480px) {
+      header h1 { font-size: 19px; }
+      .option {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+
+<body>
+<header>
+  <h1>JB Trip Decision Board</h1>
+  <p>Vote once per decision. Winners update live.</p>
+</header>
+
+<main>
+  <div id="status">Loading votes...</div>
+
+  <section class="section">
+    <h2>Current Winners</h2>
+    <div id="summary">Waiting for votes...</div>
+    <div id="warnings"></div>
+  </section>
+
+  <section class="section">
+    <h2>Decisions</h2>
+    <div id="decisionBoard"></div>
+  </section>
+</main>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import {
+    getFirestore,
+    doc,
+    setDoc,
+    updateDoc,
+    increment,
+    onSnapshot
+  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "PASTE_YOUR_API_KEY",
+    authDomain: "PASTE_YOUR_AUTH_DOMAIN",
+    projectId: "PASTE_YOUR_PROJECT_ID",
+    storageBucket: "PASTE_YOUR_STORAGE_BUCKET",
+    messagingSenderId: "PASTE_YOUR_MESSAGING_SENDER_ID",
+    appId: "PASTE_YOUR_APP_ID"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  const EVENT_ID = "jb-trip-2026";
+
+  const decisions = [
+    {
+      id: "day2-lunch",
+      title: "Day 2 Lunch",
+      subtitle: "Where should we eat for lunch on Day 2?",
+      options: [
+        { id: "teck-sing", label: "Teck Sing", note: "Near KSL / group-friendly" },
+        { id: "midvalley", label: "Mid Valley Southkey", note: "Easy mall option, many choices" },
+        { id: "ksl", label: "KSL City Mall", note: "Very convenient, low planning effort" },
+        { id: "delivery", label: "Delivery to Airbnb", note: "Best if people arrive at different timings" }
+      ]
+    },
+    {
+      id: "day2-dinner",
+      title: "Day 2 Dinner",
+      subtitle: "Where should we eat for dinner on Day 2?",
+      options: [
+        { id: "seafood", label: "Seafood Dinner", note: "Proper group meal" },
+        { id: "hotpot", label: "Hotpot", note: "Good for sharing" },
+        { id: "zi-char", label: "Zi Char", note: "Safe and flexible" },
+        { id: "delivery", label: "Delivery to Airbnb", note: "Most logistically simple" }
+      ]
+    },
+    {
+      id: "cat-cafe",
+      title: "Cat Cafe Timing",
+      subtitle: "When should we go cat cafe?",
+      options: [
+        { id: "day2-afternoon", label: "Day 2 Afternoon", note: "After lunch, before dinner" },
+        { id: "day3-morning", label: "Day 3 Morning", note: "Cleaner schedule, less rushed" },
+        { id: "skip", label: "Skip Cat Cafe", note: "Only if schedule too packed" }
+      ]
+    }
+  ];
+
+  const voteCounts = {};
+  const finalChoices = {};
+
+  function voteKey(decisionId) {
+    return `decisionBoard_${EVENT_ID}_${decisionId}`;
+  }
+
+  function hasVoted(decisionId) {
+    return localStorage.getItem(voteKey(decisionId)) === "1";
+  }
+
+  function markVoted(decisionId) {
+    localStorage.setItem(voteKey(decisionId), "1");
+  }
+
+  function votePath(decisionId, optionId) {
+    return doc(db, "events", EVENT_ID, "decisions", decisionId, "options", optionId);
+  }
+
+  function finalPath(decisionId) {
+    return doc(db, "events", EVENT_ID, "finalChoices", decisionId);
+  }
+
+  function renderBoard() {
+    const board = document.getElementById("decisionBoard");
+
+    board.innerHTML = decisions.map(decision => {
+      const optionsHtml = decision.options.map(option => {
+        const count = voteCounts[decision.id]?.[option.id] || 0;
+        const disabled = hasVoted(decision.id) ? "disabled" : "";
+        const buttonText = hasVoted(decision.id) ? "Voted" : "Vote";
+
+        return `
+          <div class="option">
+            <div class="option-main">
+              <div class="option-title">${option.label}</div>
+              <div class="option-note">${option.note}</div>
+            </div>
+            <div class="votes">👍 ${count}</div>
+            <button onclick="vote('${decision.id}', '${option.id}')" ${disabled}>${buttonText}</button>
+          </div>
+        `;
+      }).join("");
+
+      const winner = getWinner(decision.id);
+      const finalChoice = finalChoices[decision.id];
+
+      return `
+        <div class="decision-card">
+          <div class="decision-title">${decision.title}</div>
+          <div class="decision-subtitle">${decision.subtitle}</div>
+
+          ${optionsHtml}
+
+          <div class="winner">
+            Current winner: ${winner ? winner.label + " (" + winner.votes + " votes)" : "No votes yet"}
+          </div>
+
+          ${finalChoice ? `
+            <div class="final">Finalised: ${finalChoice.label}</div>
+          ` : ""}
+
+          <div class="actions">
+            <button class="finalise" onclick="finaliseDecision('${decision.id}')">Finalise Current Winner</button>
+            <button class="reset" onclick="resetMyVote('${decision.id}')">Reset My Vote</button>
+          </div>
+        </div>
+      `;
+    }).join("");
+
+    renderSummary();
+  }
+
+  function getWinner(decisionId) {
+    const decision = decisions.find(d => d.id === decisionId);
+    if (!decision) return null;
+
+    const ranked = decision.options
+      .map(option => ({
+        ...option,
+        votes: voteCounts[decisionId]?.[option.id] || 0
+      }))
+      .sort((a, b) => b.votes - a.votes);
+
+    if (!ranked.length || ranked[0].votes === 0) return null;
+    return ranked[0];
+  }
+
+  async function vote(decisionId, optionId) {
+    if (hasVoted(decisionId)) {
+      document.getElementById("status").textContent = "You already voted for this decision on this device.";
+      return;
+    }
+
+    try {
+      const ref = votePath(decisionId, optionId);
+
+      try {
+        await updateDoc(ref, { count: increment(1) });
+      } catch {
+        await setDoc(ref, { count: 1 });
+      }
+
+      markVoted(decisionId);
+      document.getElementById("status").textContent = "Vote submitted.";
+      renderBoard();
+    } catch (err) {
+      console.error(err);
+      document.getElementById("status").textContent = "Vote failed. Check Firebase config/rules.";
+    }
+  }
+
+  async function finaliseDecision(decisionId) {
+    const winner = getWinner(decisionId);
+
+    if (!winner) {
+      alert("No winner yet.");
+      return;
+    }
+
+    try {
+      await setDoc(finalPath(decisionId), {
+        optionId: winner.id,
+        label: winner.label,
+        finalisedAt: new Date().toISOString()
+      });
+
+      document.getElementById("status").textContent = `${winner.label} finalised.`;
+    } catch (err) {
+      console.error(err);
+      document.getElementById("status").textContent = "Finalise failed. Check Firebase rules.";
+    }
+  }
+
+  function resetMyVote(decisionId) {
+    localStorage.removeItem(voteKey(decisionId));
+    document.getElementById("status").textContent = "Your local vote lock was reset. Note: this does not remove the previous Firebase vote count.";
+    renderBoard();
+  }
+
+  function renderSummary() {
+    const summary = document.getElementById("summary");
+
+    const lines = decisions.map(decision => {
+      const finalChoice = finalChoices[decision.id];
+      const winner = getWinner(decision.id);
+
+      return `
+        <div style="margin-bottom:8px;">
+          <strong>${decision.title}:</strong>
+          ${finalChoice ? finalChoice.label + " ✅" : winner ? winner.label : "No votes yet"}
+        </div>
+      `;
+    });
+
+    summary.innerHTML = lines.join("");
+    renderWarnings();
+  }
+
+  function renderWarnings() {
+    const warnings = document.getElementById("warnings");
+
+    const lunch = finalChoices["day2-lunch"]?.optionId || getWinner("day2-lunch")?.id;
+    const dinner = finalChoices["day2-dinner"]?.optionId || getWinner("day2-dinner")?.id;
+    const catCafe = finalChoices["cat-cafe"]?.optionId || getWinner("cat-cafe")?.id;
+
+    const messages = [];
+
+    if (catCafe === "day2-afternoon" && lunch === "delivery") {
+      messages.push("Cat cafe on Day 2 afternoon may clash with a slow lunch at the Airbnb. Keep lunch simple or leave earlier.");
+    }
+
+    if (catCafe === "day2-afternoon" && dinner === "seafood") {
+      messages.push("Cat cafe + seafood dinner on Day 2 may be a heavier schedule. Consider Day 3 cat cafe if travelling far.");
+    }
+
+    if (lunch === "midvalley" && dinner === "seafood") {
+      messages.push("Mid Valley lunch + seafood dinner is workable, but check travel time and avoid overpacking the day.");
+    }
+
+    if (catCafe === "day3-morning") {
+      messages.push("Cat cafe on Day 3 morning keeps Day 2 cleaner and less rushed.");
+    }
+
+    warnings.innerHTML = messages.map(m => `<div class="warning">${m}</div>`).join("");
+  }
+
+  function listenToVotes() {
+    decisions.forEach(decision => {
+      voteCounts[decision.id] = {};
+
+      decision.options.forEach(option => {
+        const ref = votePath(decision.id, option.id);
+
+        onSnapshot(ref, snapshot => {
+          voteCounts[decision.id][option.id] = snapshot.exists()
+            ? snapshot.data().count || 0
+            : 0;
+
+          renderBoard();
+          document.getElementById("status").textContent = "Votes synced.";
+        });
+      });
+
+      onSnapshot(finalPath(decision.id), snapshot => {
+        if (snapshot.exists()) {
+          finalChoices[decision.id] = snapshot.data();
+        } else {
+          delete finalChoices[decision.id];
+        }
+
+        renderBoard();
+      });
+    });
+  }
+
+  window.vote = vote;
+  window.finaliseDecision = finaliseDecision;
+  window.resetMyVote = resetMyVote;
+
+  renderBoard();
+  listenToVotes();
+</script>
+</body>
+</html>
